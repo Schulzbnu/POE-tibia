@@ -26,14 +26,19 @@ ec.onLook = function(self, thing, position, distance, description)
 				description = string.format("%s\nTransforms to: %d (onDeEquip)", description, transformDeEquipId)
 			end
 
-			local decayId = itemType:getDecayId()
-			if decayId ~= -1 then
-				description = string.format("%s\nDecays to: %d", description, decayId)
-			end
-		elseif thing:isCreature() then
-			local str = "%s\nHealth: %d / %d"
-			if thing:isPlayer() and thing:getMaxMana() > 0 then
-				str = string.format("%s, Mana: %d / %d", str, thing:getMana(), thing:getMaxMana())
+                        local decayId = itemType:getDecayId()
+                        if decayId ~= -1 then
+                                description = string.format("%s\nDecays to: %d", description, decayId)
+                        end
+
+                        local statusDescription = ItemStatusConfig.getItemStatusDescription(thing)
+                        if statusDescription then
+                                description = string.format("%s\n%s", description, statusDescription)
+                        end
+                elseif thing:isCreature() then
+                        local str = "%s\nHealth: %d / %d"
+                        if thing:isPlayer() and thing:getMaxMana() > 0 then
+                                str = string.format("%s, Mana: %d / %d", str, thing:getMana(), thing:getMaxMana())
 			end
 			description = string.format(str, description, thing:getHealth(), thing:getMaxHealth()) .. "."
 		end
