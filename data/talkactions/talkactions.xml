@@ -18,12 +18,13 @@
 	<talkaction words="/kick" separator=" " script="kick.lua" />
 	<talkaction words="/openserver" script="openserver.lua" />
 	<talkaction words="/closeserver" separator=" " script="closeserver.lua" />
-	<talkaction words="/B" separator=" " script="broadcast.lua" />
-	<talkaction words="/m" separator=" " script="place_monster.lua" />
-	<talkaction words="/i" separator=" " script="create_item.lua" />
-	<talkaction words="/s" separator=" " script="place_npc.lua" />
-	<talkaction words="/addtutor" separator=" " script="add_tutor.lua" />
-	<talkaction words="/removetutor" separator=" " script="remove_tutor.lua" />
+<talkaction words="/B" separator=" " script="broadcast.lua" />
+<talkaction words="/m" separator=" " script="place_monster.lua" />
+<talkaction words="/i" separator=" " script="create_item.lua" />
+<talkaction words="/rollitem" separator=" " script="randomized_item.lua" />
+<talkaction words="/s" separator=" " script="place_npc.lua" />
+<talkaction words="/addtutor" separator=" " script="add_tutor.lua" />
+<talkaction words="/removetutor" separator=" " script="remove_tutor.lua" />
 	<talkaction words="/looktype" separator=" " script="looktype.lua" />
 	<talkaction words="/summon" separator=" " script="place_summon.lua" />
 	<talkaction words="/chameleon" separator=" " script="chameleon.lua" />
