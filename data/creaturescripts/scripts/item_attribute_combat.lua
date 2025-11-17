@@ -36,7 +36,7 @@ end
 
 local function collectAttributeTotals(creature)
   local totals = {}
-  if not creature then
+  if not creature or not creature.getSlotItem or not creature:isPlayer() then
     return totals
   end
 
