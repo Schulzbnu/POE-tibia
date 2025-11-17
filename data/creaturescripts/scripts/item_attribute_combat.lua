@@ -190,6 +190,32 @@ local function applyRegeneration(creature, totals)
   end
 end
 
+local function sendServlogMessage(target, message)
+  if target and target:isPlayer() then
+    target:sendTextMessage(MESSAGE_STATUS_CONSOLE_ORANGE, message)
+  end
+end
+
+local function logCombatEvent(creature, attacker, primaryDamage, primaryType, secondaryDamage, secondaryType, modifiedPrimary, modifiedSecondary)
+  local attackerName = (attacker and attacker.getName and attacker:getName()) or "Unknown"
+  local defenderName = (creature and creature.getName and creature:getName()) or "Unknown"
+
+  local message = string.format(
+    "ItemAttributeCombat: %s -> %s | Primary %d→%d (type %d), Secondary %d→%d (type %d)",
+    attackerName,
+    defenderName,
+    primaryDamage,
+    modifiedPrimary,
+    primaryType,
+    secondaryDamage,
+    modifiedSecondary,
+    secondaryType
+  )
+
+  sendServlogMessage(attacker, message)
+  sendServlogMessage(creature, message)
+end
+
 function onHealthChange(creature, attacker, primaryDamage, primaryType, secondaryDamage, secondaryType, origin)
   local attackerTotals = collectAttributeTotals(attacker)
   local defenderTotals = collectAttributeTotals(creature)
@@ -207,6 +233,8 @@ function onHealthChange(creature, attacker, primaryDamage, primaryType, secondar
 
   applyRegeneration(attacker, attackerTotals)
   applyRegeneration(creature, defenderTotals)
+
+  logCombatEvent(creature, attacker, primaryDamage, primaryType, secondaryDamage, secondaryType, modifiedPrimary, modifiedSecondary)
 
   return modifiedPrimary, primaryType, modifiedSecondary, secondaryType
 end
