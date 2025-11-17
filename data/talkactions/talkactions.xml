@@ -33,8 +33,8 @@
 	<talkaction words="/clean" script="clean.lua" />
 	<talkaction words="/hide" script="hide.lua" />
 	<talkaction words="/reload" separator=" " script="reload.lua" />
-        <talkaction words="/raid" separator=" " script="force_raid.lua" />
-        <talkaction words="/poeitem" separator="," script="poe_affix_create.lua" />
+    <talkaction words="/raid" separator=" " script="force_raid.lua" />
+
 
         <!-- player talkactions -->
 	<talkaction words="!buypremium" script="buyprem.lua" />
