@@ -3,6 +3,8 @@ forgottenserver [![Build Status](https://github.com/otland/forgottenserver/actio
 
 The Forgotten Server is a free and open-source MMORPG server emulator written in C++. It is a fork of the [OpenTibia Server](https://github.com/opentibia/server) project. To connect to the server, you can use [OTClient](https://github.com/edubart/otclient).
 
+This fork aims to deliver a Tibia experience inspired by the action-RPG Path of Exile, adapting mechanics and atmosphere from PoE while retaining familiar OpenTibia gameplay.
+
 ### Getting Started
 
 * [Compiling](https://github.com/otland/forgottenserver/wiki/Compiling), alternatively download [releases](https://github.com/otland/forgottenserver/releases)
