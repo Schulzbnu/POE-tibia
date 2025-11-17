@@ -4,8 +4,9 @@
 	<event type="logout" name="PlayerLogout" script="logout.lua" />
 	<event type="login" name="FirstItems" script="firstitems.lua" />
 	<event type="login" name="OfflineTraining" script="offlinetraining.lua" />
-	<event type="login" name="RegenerateStamina" script="regeneratestamina.lua" />
-	<event type="death" name="PlayerDeath" script="playerdeath.lua" />
-	<event type="death" name="DropLoot" script="droploot.lua" />
-	<event type="extendedopcode" name="ExtendedOpcode" script="extendedopcode.lua" />
+<event type="login" name="RegenerateStamina" script="regeneratestamina.lua" />
+<event type="death" name="PlayerDeath" script="playerdeath.lua" />
+<event type="death" name="DropLoot" script="droploot.lua" />
+<event type="extendedopcode" name="ExtendedOpcode" script="extendedopcode.lua" />
+<event type="healthchange" name="ItemAttributeCombat" script="item_attribute_combat.lua" />
 </creaturescripts>
