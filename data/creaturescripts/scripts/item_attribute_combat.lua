@@ -16,17 +16,23 @@ local function addAttributeTotalsFromItem(totals, item)
     return
   end
 
+  local attributeList
   local itemTypeName = item:getCustomAttribute('itemType')
-  if not itemTypeName then
-    return
+  if itemTypeName then
+    local typeConfig = ItemStatusConfig.getTypeConfig(itemTypeName)
+    attributeList = typeConfig and typeConfig.attributes
   end
 
-  local typeConfig = ItemStatusConfig.getTypeConfig(itemTypeName)
-  if not typeConfig then
-    return
+  -- Fallback: if the item has attributes but no itemType metadata, scan all
+  -- known attribute definitions so custom values are still applied in combat.
+  if not attributeList then
+    attributeList = {}
+    for attributeName in pairs(ItemStatusConfig.baseAttributes) do
+      table.insert(attributeList, attributeName)
+    end
   end
 
-  for _, attributeName in ipairs(typeConfig.attributes) do
+  for _, attributeName in ipairs(attributeList) do
     local value = item:getCustomAttribute('attr_' .. attributeName)
     if value then
       totals[attributeName] = (totals[attributeName] or 0) + value
