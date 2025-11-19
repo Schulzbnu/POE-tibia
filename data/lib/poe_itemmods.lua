@@ -147,6 +147,46 @@ PoeItemMods.MOD_POOLS = {
                 { tier = 3, min = 10, max = 14 },
             },
         },
+        {
+            id = "fireDamage",
+            text = "+%d fire damage",
+            category = "offense",
+            tiers = {
+                { tier = 1, min = 25, max = 35 },
+                { tier = 2, min = 15, max = 24 },
+                { tier = 3, min = 5,  max = 14 },
+            },
+        },
+        {
+            id = "iceDamage",
+            text = "+%d ice damage",
+            category = "offense",
+            tiers = {
+                { tier = 1, min = 25, max = 35 },
+                { tier = 2, min = 15, max = 24 },
+                { tier = 3, min = 5,  max = 14 },
+            },
+        },
+        {
+            id = "energyDamage",
+            text = "+%d energy damage",
+            category = "offense",
+            tiers = {
+                { tier = 1, min = 25, max = 35 },
+                { tier = 2, min = 15, max = 24 },
+                { tier = 3, min = 5,  max = 14 },
+            },
+        },
+        {
+            id = "earthDamage",
+            text = "+%d earth damage",
+            category = "offense",
+            tiers = {
+                { tier = 1, min = 25, max = 35 },
+                { tier = 2, min = 15, max = 24 },
+                { tier = 3, min = 5,  max = 14 },
+            },
+        },
         -- pode adicionar dano elemental, etc
     },
 

@@ -234,6 +234,30 @@ MiniWindow
         !text: tr('Mana Regen')
       SkillValueLabel
 
+    SmallSkillButton
+      id: skillId15
+      SkillNameLabel
+        !text: tr('Fire Damage')
+      SkillValueLabel
+
+    SmallSkillButton
+      id: skillId16
+      SkillNameLabel
+        !text: tr('Ice Damage')
+      SkillValueLabel
+
+    SmallSkillButton
+      id: skillId17
+      SkillNameLabel
+        !text: tr('Energy Damage')
+      SkillValueLabel
+
+    SmallSkillButton
+      id: skillId18
+      SkillNameLabel
+        !text: tr('Earth Damage')
+      SkillValueLabel
+
     // 14.12
     SmallSkillButton
       id: damageHealing

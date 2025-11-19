@@ -15,6 +15,10 @@ PoeStats.STORAGE_LIFE_REGEN  = 90005
 PoeStats.STORAGE_MANA_LEECH   = 90006
 PoeStats.STORAGE_MANA_REGEN   = 90007
 PoeStats.STORAGE_CRIT_MULTI   = 90008
+PoeStats.STORAGE_FIRE_DAMAGE   = 90009
+PoeStats.STORAGE_ICE_DAMAGE    = 90010
+PoeStats.STORAGE_ENERGY_DAMAGE = 90011
+PoeStats.STORAGE_EARTH_DAMAGE  = 90012
 
 
 function PoeStats.getTotalStats(player)
@@ -27,6 +31,10 @@ function PoeStats.getTotalStats(player)
         manaLeech   = 0,
         manaRegen   = 0,
         critMulti   = 0,
+        fireDamage  = 0,
+        iceDamage   = 0,
+        energyDamage = 0,
+        earthDamage = 0,
     }
 
     for _, slot in ipairs(PoeItemMods.EQUIP_SLOTS) do
@@ -51,6 +59,14 @@ function PoeStats.getTotalStats(player)
                         totals.manaRegen = (totals.manaRegen or 0) + (m.value or 0)
                     elseif m.id == "critMulti" then
                         totals.critMulti = (totals.critMulti or 0) + (m.value or 0)
+                    elseif m.id == "fireDamage" then
+                        totals.fireDamage = (totals.fireDamage or 0) + (m.value or 0)
+                    elseif m.id == "iceDamage" then
+                        totals.iceDamage = (totals.iceDamage or 0) + (m.value or 0)
+                    elseif m.id == "energyDamage" then
+                        totals.energyDamage = (totals.energyDamage or 0) + (m.value or 0)
+                    elseif m.id == "earthDamage" then
+                        totals.earthDamage = (totals.earthDamage or 0) + (m.value or 0)
 
                     end
                     -- aqui você adiciona mais atributos conforme for criando
@@ -128,6 +144,10 @@ function PoeStats.recalculate(player)
     player:setStorageValue(PoeStats.STORAGE_MANA_LEECH, totals.manaLeech)
     player:setStorageValue(PoeStats.STORAGE_MANA_REGEN, totals.manaRegen)
     player:setStorageValue(PoeStats.STORAGE_CRIT_MULTI, totals.critMulti)
+    player:setStorageValue(PoeStats.STORAGE_FIRE_DAMAGE, totals.fireDamage)
+    player:setStorageValue(PoeStats.STORAGE_ICE_DAMAGE, totals.iceDamage)
+    player:setStorageValue(PoeStats.STORAGE_ENERGY_DAMAGE, totals.energyDamage)
+    player:setStorageValue(PoeStats.STORAGE_EARTH_DAMAGE, totals.earthDamage)
 
 
         -- Fora de combate: conditions
@@ -145,7 +165,7 @@ function PoeStats.sendToPlayer(player)
     local totals = PoeStats.getTotalStats(player)
 
     local buffer = string.format(
-        "%d;%d;%d;%d;%d;%d;%d;%d",
+        "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d",
         totals.critChance or 0,
         totals.lifeLeech or 0,
         totals.blockChance or 0,
@@ -153,7 +173,11 @@ function PoeStats.sendToPlayer(player)
         totals.lifeRegen or 0,
         totals.manaLeech or 0,
         totals.manaRegen or 0,
-        totals.critMulti or 0
+        totals.critMulti or 0,
+        totals.fireDamage or 0,
+        totals.iceDamage or 0,
+        totals.energyDamage or 0,
+        totals.earthDamage or 0
     )
 
     print("[POE] sendToPlayer -> " .. buffer) -- DEBUG no console do TFS
