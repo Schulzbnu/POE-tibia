@@ -2,11 +2,8 @@ local ec = EventCallback
 
 ec.onLook = function(self, thing, position, distance, description)
 	local description = "You see " .. thing:getDescription(distance)
-        if thing:isItem() then
-                local statusDescription = ItemStatusConfig.getItemStatusDescription(thing)
-                if statusDescription then
-                        description = string.format("%s\n%s", description, statusDescription)
-                end
+        if thing:isItem() then                
+                description = string.format("%s\n%s", description, statusDescription)                
         end
 
         if self:getGroup():getAccess() then

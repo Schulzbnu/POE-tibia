@@ -8,6 +8,5 @@
 <event type="death" name="PlayerDeath" script="playerdeath.lua" />
 <event type="death" name="DropLoot" script="droploot.lua" />
 <event type="extendedopcode" name="ExtendedOpcode" script="extendedopcode.lua" />
-<event type="healthchange" name="ItemAttributeCombat" script="item_attribute_combat.lua" />
-<event type="spawn" name="RegisterItemAttributeCombat" script="register_item_attribute_combat.lua" />
+<event type="healthchange" name="PoeCombat" script="poe_combat.lua" />
 </creaturescripts>

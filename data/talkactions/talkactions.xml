@@ -21,7 +21,8 @@
 <talkaction words="/B" separator=" " script="broadcast.lua" />
 <talkaction words="/m" separator=" " script="place_monster.lua" />
 <talkaction words="/i" separator=" " script="create_item.lua" />
-<talkaction words="/rollitem" separator=" " script="randomized_item.lua" />
+<talkaction words="/rollpoe" separator=" " script="poe_roll_item.lua" />
+<talkaction words="/stats" script="poe_stats_command.lua" />
 <talkaction words="/s" separator=" " script="place_npc.lua" />
 <talkaction words="/addtutor" separator=" " script="add_tutor.lua" />
 <talkaction words="/removetutor" separator=" " script="remove_tutor.lua" />

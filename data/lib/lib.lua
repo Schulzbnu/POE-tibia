@@ -7,3 +7,7 @@ dofile('data/lib/compat/compat.lua')
 -- Debugging helper function for Lua developers
 dofile('data/lib/debugging/dump.lua')
 dofile('data/lib/debugging/lua_version.lua')
+dofile('data/lib/poe_itemmods.lua')
+dofile('data/lib/poe_stats.lua')
+
+

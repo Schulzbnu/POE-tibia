@@ -28,6 +28,6 @@ function onLogin(player)
 	-- Events
 	player:registerEvent("PlayerDeath")
 	player:registerEvent("DropLoot")
-	player:registerEvent("ItemAttributeCombat")
+	player:registerEvent("PoeCombat")
 	return true
 end
