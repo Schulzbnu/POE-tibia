@@ -1,0 +1,9 @@
+Module
+  name: game_poeattributes
+  description: Display POE item attribute viewer inside control buttons
+  author: OpenAI Assistant
+  website: https://github.com/mehah/otclient
+  sandboxed: true
+  scripts: [ poeattributes ]
+  @onLoad: init()
+  @onUnload: terminate()
