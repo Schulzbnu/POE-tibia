@@ -53,4 +53,7 @@
 	<!-- test talkactions -->
 	<talkaction words="!z" separator=" " script="magiceffect.lua" />
 	<talkaction words="!x" separator=" " script="animationeffect.lua" />
+
+	<talkaction words="/debugmods" script="debugmods.lua"/>
+
 </talkactions>

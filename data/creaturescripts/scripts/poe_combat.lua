@@ -63,23 +63,22 @@ end
 
 function onHealthChange(creature, attacker, primaryDamage, primaryType, secondaryDamage, secondaryType, origin)
     -- Evento roda na VÍTIMA (creature).
-    if not attacker or not attacker:isPlayer() then
-        return primaryDamage, primaryType, secondaryDamage, secondaryType
-    end
 
     -- Ignora cura
     if primaryType == COMBAT_HEALING then
         return primaryDamage, primaryType, secondaryDamage, secondaryType
     end
 
-    -- Em TFS 1.x o dano vem sempre POSITIVO nas callbacks.
+    -- Em TFS 1.x o dano vem sempre POSITIVO nas callbacks (se no teu for negativo, é só tirar esse filtro).
     if (primaryDamage or 0) <= 0 and (secondaryDamage or 0) <= 0 then
         return primaryDamage, primaryType, secondaryDamage, secondaryType
     end
 
-    -- ====== BLOCK (defensor) ======
+    --------------------------------------------------------------------
+    -- 1) BLOCK (defensor) - funciona contra QUALQUER atacante
+    --------------------------------------------------------------------
     local blockChance = 0
-    if creature:isPlayer() then
+    if creature and creature:isPlayer() then
         blockChance = creature:getStorageValue(PoeStats.STORAGE_BLOCK_CHANCE)
         if blockChance < 0 then
             blockChance = 0
@@ -89,26 +88,36 @@ function onHealthChange(creature, attacker, primaryDamage, primaryType, secondar
     if blockChance > 0 then
         local rollBlock = math.random(100)
         if rollBlock <= blockChance then
-            -- Dano totalmente bloqueado (estilo PoE)
             creature:say("BLOCK!", TALKTYPE_MONSTER_SAY)
             creature:getPosition():sendMagicEffect(CONST_ME_BLOCKHIT)
 
+            -- bloqueia todo o dano
             return 0, primaryType, 0, secondaryType
         end
     end
 
-    -- ====== CRÍTICO + LEECH (atacante) ======
+    --------------------------------------------------------------------
+    -- 2) CRÍTICO + LEECH (atacante) - só se o atacante for player
+    --------------------------------------------------------------------
+    if not attacker or not attacker:isPlayer() then
+        return primaryDamage, primaryType, secondaryDamage, secondaryType
+    end
+
     local critChance = attacker:getStorageValue(PoeStats.STORAGE_CRIT_CHANCE)
     local lifeLeech  = attacker:getStorageValue(PoeStats.STORAGE_LIFE_LEECH)
+    local manaLeech   = attacker:getStorageValue(PoeStats.STORAGE_MANA_LEECH)
+    local critMulti   = attacker:getStorageValue(PoeStats.STORAGE_CRIT_MULTI)
 
     if critChance < 0 then critChance = 0 end
     if lifeLeech  < 0 then lifeLeech  = 0 end
+    if manaLeech < 0 then manaLeech = 0 end
+    if critMulti < 0 then critMulti = 0 end
 
     -- === CRÍTICO ===
     if critChance > 0 then
         local roll = math.random(100)
         if roll <= critChance then
-            local critMultiplier = 1.5 -- 50% a mais de dano
+            local critMultiplier = 1.0 + (critMulti / 100)
             primaryDamage = math.floor((primaryDamage or 0) * critMultiplier)
             if secondaryDamage and secondaryDamage > 0 then
                 secondaryDamage = math.floor(secondaryDamage * critMultiplier)
@@ -131,6 +140,16 @@ function onHealthChange(creature, attacker, primaryDamage, primaryType, secondar
         end
     end
 
+    if manaLeech > 0 then
+        local leechAmount = math.floor(totalDamage * (manaLeech / 100))
+        if leechAmount > 0 then
+            attacker:addMana(leechAmount)
+            attacker:getPosition():sendMagicEffect(CONST_ME_MAGIC_BLUE)
+        end
+    end
+
+
     return primaryDamage, primaryType, secondaryDamage, secondaryType
 end
+
 

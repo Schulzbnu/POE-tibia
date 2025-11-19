@@ -299,57 +299,45 @@ MiniWindow
       SkillValueLabel
 
     SmallSkillButton
-      id: skillId8
+      id: skillId14
       SkillNameLabel
-        !text: tr('Critical Hit Damage')
+        !text: tr('Critical Multiplier')
       SkillValueLabel
 
     SmallSkillButton
-      id: skillId9
+      id: skillId8
       SkillNameLabel
         !text: tr('Life Leech Chance')
       SkillValueLabel
 
     SmallSkillButton
-      id: skillId10
-      SkillNameLabel
-        !text: tr('Life Leech Amount')
-      SkillValueLabel
-
-    SmallSkillButton
-      id: skillId11
+      id: skillId12
       SkillNameLabel
         !text: tr('Mana Leech Chance')
       SkillValueLabel
 
     SmallSkillButton
-      id: skillId12
+      id: skillId9
       SkillNameLabel
-        !text: tr('Mana Leech Amount')
+        !text: tr('Block Chance')
+      SkillValueLabel
+
+    SmallSkillButton
+      id: skillId10
+      SkillNameLabel
+        !text: tr('Additional Speed')
+      SkillValueLabel
+
+    SmallSkillButton
+      id: skillId11
+      SkillNameLabel
+        !text: tr('Life Regen')
       SkillValueLabel
 
     SmallSkillButton
       id: skillId13
       SkillNameLabel
-        !text: tr('Fatal')
-      SkillValueLabel
-
-    SmallSkillButton
-      id: skillId14
-      SkillNameLabel
-        !text: tr('Dodge')
-      SkillValueLabel
-
-    SmallSkillButton
-      id: skillId15
-      SkillNameLabel
-        !text: tr('Momentum')
-      SkillValueLabel
-
-    SmallSkillButton
-      id: skillId16
-      SkillNameLabel
-        !text: tr('Transcendence')
+        !text: tr('Mana Regen')
       SkillValueLabel
 
     // 14.12

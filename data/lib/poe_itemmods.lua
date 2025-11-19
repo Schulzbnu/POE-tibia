@@ -117,6 +117,36 @@ PoeItemMods.MOD_POOLS = {
                 { tier = 3, min = 1, max = 1 },
             },
         },
+        {
+            id = "manaRegen",
+            text = "+%d mana regenerated",
+            category = "utility",
+            tiers = {
+                { tier = 1, min = 20, max = 30 },
+                { tier = 2, min = 10, max = 19 },
+                { tier = 3, min = 5,  max = 9  },
+            },
+        },
+        {
+            id = "manaLeech",
+            text = "%d%% of damage leeched as mana",
+            category = "offense",
+            tiers = {
+                { tier = 1, min = 4, max = 5 },
+                { tier = 2, min = 2, max = 3 },
+                { tier = 3, min = 1, max = 1 },
+            },
+        },
+        {
+            id = "critMulti",
+            text = "+%d%% critical damage",
+            category = "offense",
+            tiers = {
+                { tier = 1, min = 30, max = 50 },
+                { tier = 2, min = 15, max = 29 },
+                { tier = 3, min = 10, max = 14 },
+            },
+        },
         -- pode adicionar dano elemental, etc
     },
 
@@ -133,7 +163,7 @@ PoeItemMods.MOD_POOLS = {
         },
         {
             id = "lifeRegen",
-            text = "+%d life regenerated per 2s",
+            text = "+%d life regenerated",
             category = "utility",
             tiers = {
                 { tier = 1, min = 20, max = 30 },
@@ -149,9 +179,9 @@ PoeItemMods.MOD_POOLS = {
             text = "%d%% chance to block",
             category = "defense",
             tiers = {
-                { tier = 1, min = 10, max = 12 },
-                { tier = 2, min = 7,  max = 9  },
-                { tier = 3, min = 4,  max = 6  },
+                { tier = 1, min = 3, max = 6 },
+                { tier = 2, min = 5,  max = 8  },
+                { tier = 3, min = 7,  max = 10 },
             },
         },
     },
@@ -169,7 +199,7 @@ PoeItemMods.MOD_POOLS = {
         },
         {
             id = "lifeRegen",
-            text = "+%d life regenerated per 2s",
+            text = "+%d life regenerated",
             category = "utility",
             tiers = {
                 { tier = 1, min = 10, max = 15 },
@@ -189,8 +219,9 @@ PoeItemMods.MOD_POOLS = {
                 { tier = 3, min = 200, max = 200 },
             },
         },
-    },   
+    },
 }
+
 
 -- ========= Helpers de encode/decode em customAttribute "poeMods" ==========
 
@@ -246,3 +277,24 @@ function PoeItemMods.getItemMods(item)
     local mods = PoeItemMods.decodeMods(modsStr)
     return rarity, mods
 end
+
+function PoeItemMods.debugItem(player)
+    for _, slot in ipairs(PoeItemMods.EQUIP_SLOTS) do
+        local item = player:getSlotItem(slot)
+        if item then
+            local rarity, mods = PoeItemMods.getItemMods(item)
+            print("ITEM:", item:getId(), "rarity:", rarity)
+
+            if mods then
+                for k,v in pairs(mods) do
+                    print("   -> mod", k, v.id, v.value)
+                end
+            else
+                print("   -> sem mods")
+            end
+        else
+            print("EMPTY SLOT", slot)
+        end
+    end
+end
+

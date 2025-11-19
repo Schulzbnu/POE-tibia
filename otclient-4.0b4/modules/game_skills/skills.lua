@@ -3,6 +3,19 @@ skillsButton = nil
 skillsSettings = nil
 local ExpRating = {}
 
+-- 🔹 PoE
+local POE_OPCODE = 50 -- mesmo do servidor
+local poeStats = {
+  critChance = 0,
+  lifeLeech  = 0,
+  blockChance = 0,
+  moveSpeed  = 0,
+  lifeRegen  = 0,
+  manaLeech  = 0,
+  manaRegen  = 0,
+  critMulti  = 0
+}
+
 function init()
     connect(LocalPlayer, {
         onExperienceChange = onExperienceChange,
@@ -34,6 +47,7 @@ function init()
         onGameStart = online,
         onGameEnd = offline
     })
+    ProtocolGame.registerExtendedOpcode(POE_OPCODE, onPoEStats)
 
     skillsButton = modules.game_mainpanel.addToggleButton('skillsButton', tr('Skills') .. ' (Alt+S)',
                                                                    '/images/options/button_skills', toggle, false, 1)
@@ -558,7 +572,15 @@ function resetSkillColor(id)
 end
 
 function toggleSkill(id, state)
+    -- se a janela ainda não foi criada/carregada
+    if not skillsWindow then return end
+
     local skill = skillsWindow:recursiveGetChildById(id)
+    if not skill then
+        -- widget não existe na UI, só ignora
+        return
+    end
+
     skill:setVisible(state)
 end
 
@@ -580,6 +602,7 @@ function setSkillBase(id, value, baseValue)
         skill:removeTooltip()
     end
 end
+
 
 function setSkillValue(id, value)
     local skill = skillsWindow:recursiveGetChildById(id)
@@ -787,6 +810,7 @@ function refresh()
             end
             toggleSkill('skillId' .. i, ativedAdditionalSkills)
         end
+        updatePoESkills()
     end
 -- todo reload skills 14.12
     update()
@@ -869,6 +893,7 @@ function refresh()
     end
     
     loadSkillsVisibilitySettings()
+    updatePoESkills()
 end
 
 function loadSkillsVisibilitySettings()
@@ -1336,7 +1361,7 @@ function onSkillChange(localPlayer, id, level, percent)
     onBaseSkillChange(localPlayer, id, localPlayer:getSkillBaseLevel(id))
 
     if id > Skill.ManaLeechAmount then
-	    toggleSkill('skillId' .. id, level > 0)
+        toggleSkill('skillId' .. id, level > 0)
     end
 end
 
@@ -1409,25 +1434,25 @@ local function setSkillValueWithTooltips(id, value, tooltip, showPercentage, col
         return
     end
     
-    -- Check if this stat should be hidden for older client versions
-    if g_game.getClientVersion() < 1412 then
-        local statsToHide = {
-            'skillId7', 'skillId8', 'skillId9', 'skillId10', 'skillId11', 'skillId12', 
-            'skillId13', 'skillId14', 'skillId15', 'skillId16', -- offense stats
-            'physicalResist', 'fireResist', 'earthResist', 'energyResist', 'IceResist', 
-            'HolyResist', 'deathResist', 'HealingResist', 'drowResist', 'lifedrainResist', 
-            'manadRainResist', 'defenceValue', 'armorValue', 'mitigation', 'dodge', 
-            'damageReflection', -- defense stats
-            'momentum', 'transcendence', 'amplification' -- misc stats
-        }
+    -- -- Check if this stat should be hidden for older client versions
+    -- if g_game.getClientVersion() < 1412 then
+    --     local statsToHide = {
+    --         'skillId7', 'skillId8', 'skillId9', 'skillId10', 'skillId11', 'skillId12', 
+    --         'skillId13', 'skillId14', 'skillId15', 'skillId16', -- offense stats
+    --         'physicalResist', 'fireResist', 'earthResist', 'energyResist', 'IceResist', 
+    --         'HolyResist', 'deathResist', 'HealingResist', 'drowResist', 'lifedrainResist', 
+    --         'manadRainResist', 'defenceValue', 'armorValue', 'mitigation', 'dodge', 
+    --         'damageReflection', -- defense stats
+    --         'momentum', 'transcendence', 'amplification' -- misc stats
+    --     }
         
-        for _, statId in pairs(statsToHide) do
-            if id == statId then
-                skill:hide()
-                return
-            end
-        end
-    end
+        -- for _, statId in pairs(statsToHide) do
+        --     if id == statId then
+        --         skill:hide()
+        --         return
+        --     end
+        -- end
+    -- end
     
     if value and value ~= 0 then
         skill:show()
@@ -1455,6 +1480,62 @@ local function setSkillValueWithTooltips(id, value, tooltip, showPercentage, col
         skill:hide()
     end
 end
+
+-- ======================
+--  PoE STATS (CLIENTE)
+-- ======================
+
+function setPoESkillText(id, text, value)
+    local skill = skillsWindow:recursiveGetChildById(id)
+    if not skill then return end
+
+    local widget = skill:getChildById('value')
+    if not widget then return end
+
+    skill:setVisible(true)
+    widget:setText(text)
+
+    if value and value > 0 then
+        widget:setColor("#00FF00")
+    else
+        widget:setColor("#BBBBBB")
+    end
+end
+
+
+function updatePoESkills()
+    setPoESkillText('skillId7',  string.format("%d%%",  poeStats.critChance or 0), poeStats.critChance or 0)
+    setPoESkillText('skillId8',  string.format("%d%%",  poeStats.lifeLeech  or 0), poeStats.lifeLeech  or 0)
+    setPoESkillText('skillId9',  string.format("%d%%",  poeStats.blockChance or 0), poeStats.blockChance or 0)
+    setPoESkillText('skillId10', string.format("+%d",   poeStats.moveSpeed or 0), poeStats.moveSpeed or 0)
+    setPoESkillText('skillId11', string.format("+%d/s", poeStats.lifeRegen or 0), poeStats.lifeRegen or 0)
+    setPoESkillText('skillId12', string.format("%d%%",  poeStats.manaLeech or 0), poeStats.manaLeech or 0)
+    setPoESkillText('skillId13', string.format("+%d/s", poeStats.manaRegen or 0), poeStats.manaRegen or 0)
+    setPoESkillText('skillId14', string.format("%d%%",  poeStats.critMulti or 0), poeStats.critMulti or 0)
+end
+
+function onPoEStats(protocol, opcode, buffer)
+    -- buffer vindo do servidor: "crit;leech;block;ms;regen"
+    if not buffer or buffer == "" then        
+        return
+    end
+
+    local parts = string.explode(buffer, ";") or string.split(buffer, ";")
+    -- dependendo da versão do OTClient você tem explode ou split. 
+    -- Se só tiver string.explode, remove o string.split.
+
+    poeStats.critChance = tonumber(parts[1]) or 0
+    poeStats.lifeLeech  = tonumber(parts[2]) or 0
+    poeStats.blockChance= tonumber(parts[3]) or 0
+    poeStats.moveSpeed  = tonumber(parts[4]) or 0
+    poeStats.lifeRegen  = tonumber(parts[5]) or 0
+    poeStats.manaLeech  = tonumber(parts[6]) or 0
+    poeStats.manaRegen  = tonumber(parts[7]) or 0
+    poeStats.critMulti  = tonumber(parts[8]) or 0
+
+    updatePoESkills()
+end
+
 
 function onFlatDamageHealingChange(localPlayer, flatBonus)
     -- Don't show flat damage/healing stats for older client versions
