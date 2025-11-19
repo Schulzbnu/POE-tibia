@@ -161,13 +161,6 @@ MiniWindow
       SkillValueLabel
 
     SkillButton
-      id: soul
-      height: 15
-      SkillNameLabel
-        !text: tr('Soul Points')
-      SkillValueLabel
-
-    SkillButton
       id: capacity
       height: 15
       SkillNameLabel
@@ -182,111 +175,12 @@ MiniWindow
       SkillValueLabel
 
     SkillButton
-      id: regenerationTime
-      height: 15
-      SkillNameLabel
-        !text: tr('Regeneration Time')
-      SkillValueLabel
-
-    SkillButton
       id: stamina
       SkillNameLabel
         !text: tr('Stamina')
       SkillValueLabel
       RedPercentPanel
-
-    SkillButton
-      id: offlineTraining
-      SkillNameLabel
-        !text: tr('Offline Training')
-      SkillValueLabel
-      RedPercentPanel
-
-    HorizontalSeparator
-      margin-top: 5
-      margin-bottom: 5
-
-    SkillButton
-      id: magiclevel
-      SkillNameLabel
-        !text: tr('Magic Level')
-      SkillValueLabel
-      ImageSkill
-        image-source: /images/icons/icon_magic
-        image-size: 9 9
-      SkillPercentPanel
-        background-color: red
-
-    SkillButton
-      id: skillId0
-      SkillNameLabel
-        !text: tr('Fist Fighting')
-      SkillValueLabel
-      ImageSkill
-        image-source: /images/icons/icon_fist
-        image-size: 9 9
-      SkillPercentPanel
-
-    SkillButton
-      id: skillId1
-      SkillNameLabel
-        !text: tr('Club Fighting')
-      SkillValueLabel
-      ImageSkill
-        image-source: /images/icons/icon_club
-        image-size: 9 9
-      SkillPercentPanel
-
-    SkillButton
-      id: skillId2
-      SkillNameLabel
-        !text: tr('Sword Fighting')
-      SkillValueLabel
-      ImageSkill
-        image-source: /images/icons/icon_sword
-        image-size: 9 9
-      SkillPercentPanel
-
-    SkillButton
-      id: skillId3
-      SkillNameLabel
-        !text: tr('Axe Fighting')
-      SkillValueLabel
-      ImageSkill
-        image-source: /images/icons/icon_axe
-        image-size: 9 9
-      SkillPercentPanel
-
-    SkillButton
-      id: skillId4
-      SkillNameLabel
-        !text: tr('Distance Fighting')
-      SkillValueLabel
-      ImageSkill
-        image-source: /images/icons/icon_distance
-        image-size: 9 9
-      SkillPercentPanel
-
-    SkillButton
-      id: skillId5
-      SkillNameLabel
-        !text: tr('Shielding')
-      SkillValueLabel
-      ImageSkill
-        image-source: /images/icons/icon_shielding
-        image-size: 9 9
-      SkillPercentPanel
-
-    SkillButton
-      id: skillId6
-      SkillNameLabel
-        !text: tr('Fishing')
-      SkillValueLabel
-      ImageSkill
-        image-source: /images/icons/icon_fishing
-        image-size: 9 9
-      SkillPercentPanel
-        
+      
     HorizontalSeparator
       id: separadorOnOffenceInfoChange
       margin-top: 5
@@ -635,42 +529,6 @@ SkillsListSubMenu < PopupMenu
   SkillsSubMenuOption
     id: showStamina
     !text: tr('Stamina')
-
-  SkillsSubMenuOption
-    id: showOfflineTraining
-    !text: tr('Offline Training')
-
-  SkillsSubMenuOption
-    id: showMagic
-    !text: tr('Magic')
-
-  SkillsSubMenuOption
-    id: showFist
-    !text: tr('Fist')
-
-  SkillsSubMenuOption
-    id: showClub
-    !text: tr('Club')
-
-  SkillsSubMenuOption
-    id: showSword
-    !text: tr('Sword')
-
-  SkillsSubMenuOption
-    id: showAxe
-    !text: tr('Axe')
-
-  SkillsSubMenuOption
-    id: showDistance
-    !text: tr('Distance')
-  
-  SkillsSubMenuOption
-    id: showShielding
-    !text: tr('Shielding')
-
-  SkillsSubMenuOption
-    id: showFishing
-    !text: tr('Fishing')
 
   HorizontalSeparator
     id: HorizontalSeparator

@@ -585,6 +585,11 @@ function toggleSkill(id, state)
 end
 
 function setSkillBase(id, value, baseValue)
+    local widget = skillsWindow:recursiveGetChildById("skillId" .. id)
+    if not widget then
+        return  -- se não existe no otui → não faz nada
+    end
+
     if baseValue <= 0 or value < 0 then
         return
     end
@@ -605,6 +610,11 @@ end
 
 
 function setSkillValue(id, value)
+    local widget = skillsWindow:recursiveGetChildById(id)
+    if not widget then
+        return
+    end
+
     local skill = skillsWindow:recursiveGetChildById(id)
     if skill then
         local widget = skill:getChildById('value')
@@ -639,6 +649,10 @@ function setSkillTooltip(id, value)
 end
 
 function setSkillPercent(id, percent, tooltip, color)
+    local widget = skillsWindow:recursiveGetChildById(id)
+    if not widget then
+        return
+    end
     local skill = skillsWindow:recursiveGetChildById(id)
     if skill then
         local widget = skill:getChildById('percent')
@@ -702,20 +716,7 @@ function checkAlert(id, value, maxValue, threshold, greaterThan)
     end
 end
 
-function update()
-    local offlineTraining = skillsWindow:recursiveGetChildById('offlineTraining')
-    if not g_game.getFeature(GameOfflineTrainingTime) then
-        offlineTraining:hide()
-    else
-        offlineTraining:show()
-    end
-
-    local regenerationTime = skillsWindow:recursiveGetChildById('regenerationTime')
-    if not g_game.getFeature(GamePlayerRegenerationTime) then
-        regenerationTime:hide()
-    else
-        regenerationTime:show()
-    end
+function update()    
     local xpBoostButton = skillsWindow:recursiveGetChildById('xpBoostButton')
     local xpGainRate = skillsWindow:recursiveGetChildById('xpGainRate')
     if g_game.getFeature(GameExperienceBonus) then
@@ -1355,6 +1356,10 @@ function onBaseMagicLevelChange(localPlayer, baseMagicLevel)
 end
 
 function onSkillChange(localPlayer, id, level, percent)
+    local widget = skillsWindow:recursiveGetChildById("skillId" .. id)
+    if not widget then
+        return  -- se não existe no otui → não faz nada
+    end
     setSkillValue('skillId' .. id, level)
     setSkillPercent('skillId' .. id, percent, tr('You have %s percent to go', 100 - percent))
 
