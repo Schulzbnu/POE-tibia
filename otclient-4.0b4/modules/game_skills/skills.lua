@@ -13,7 +13,11 @@ local poeStats = {
   lifeRegen  = 0,
   manaLeech  = 0,
   manaRegen  = 0,
-  critMulti  = 0
+  critMulti  = 0,
+  fireDamage = 0,
+  iceDamage = 0,
+  energyDamage = 0,
+  earthDamage = 0
 }
 
 function init()
@@ -389,7 +393,7 @@ end
 function areOffenceStatsVisible()
     local offenceStats = {
         'skillId7', 'skillId8', 'skillId9', 'skillId10', 'skillId11', 'skillId12', 
-        'skillId13', 'skillId14', 'skillId15', 'skillId16', 'separadorOnOffenceInfoChange'
+        'skillId13', 'skillId14', 'skillId15', 'skillId16', 'skillId17', 'skillId18', 'separadorOnOffenceInfoChange'
     }
     for _, skillId in pairs(offenceStats) do
         local skill = skillsWindow:recursiveGetChildById(skillId)
@@ -403,7 +407,7 @@ end
 function toggleOffenceStatsVisibility()
     local offenceStats = {
         'skillId7', 'skillId8', 'skillId9', 'skillId10', 'skillId11', 'skillId12', 
-        'skillId13', 'skillId14', 'skillId15', 'skillId16', 'separadorOnOffenceInfoChange'
+        'skillId13', 'skillId14', 'skillId15', 'skillId16', 'skillId17', 'skillId18', 'separadorOnOffenceInfoChange'
     }
     local shouldShow = not areOffenceStatsVisible()
     
@@ -618,7 +622,7 @@ function setSkillValue(id, value)
     local skill = skillsWindow:recursiveGetChildById(id)
     if skill then
         local widget = skill:getChildById('value')
-        if id == "skillId7" or id == "skillId8" or id == "skillId9" or id == "skillId11" or id == "skillId13" or id == "skillId14" or id == "skillId15" or id == "skillId16" then
+        if id == "skillId7" or id == "skillId8" or id == "skillId9" or id == "skillId11" or id == "skillId13" or id == "skillId14" then
             if g_game.getFeature(GameEnterGameShowAppearance) then
                 value = value / 100
             end
@@ -821,8 +825,8 @@ function refresh()
     if g_game.getClientVersion() < 1412 then
         -- Hide offense stats
         local offenceStats = {
-            'skillId7', 'skillId8', 'skillId9', 'skillId10', 'skillId11', 'skillId12', 
-            'skillId13', 'skillId14', 'skillId15', 'skillId16'
+            'skillId7', 'skillId8', 'skillId9', 'skillId10', 'skillId11', 'skillId12',
+            'skillId13', 'skillId14', 'skillId15', 'skillId16', 'skillId17', 'skillId18'
         }
         for _, skillId in pairs(offenceStats) do
             local skill = skillsWindow:recursiveGetChildById(skillId)
@@ -943,8 +947,8 @@ function loadSkillsVisibilitySettings()
     if g_game.getClientVersion() >= 1412 then
         if settings['offenceStats_visible'] ~= nil then
             local offenceStats = {
-                'skillId7', 'skillId8', 'skillId9', 'skillId10', 'skillId11', 'skillId12', 
-                'skillId13', 'skillId14', 'skillId15', 'skillId16'
+                'skillId7', 'skillId8', 'skillId9', 'skillId10', 'skillId11', 'skillId12',
+                'skillId13', 'skillId14', 'skillId15', 'skillId16', 'skillId17', 'skillId18'
             }
             for _, skillId in pairs(offenceStats) do
                 local skill = skillsWindow:recursiveGetChildById(skillId)
@@ -1517,6 +1521,10 @@ function updatePoESkills()
     setPoESkillText('skillId12', string.format("%d%%",  poeStats.manaLeech or 0), poeStats.manaLeech or 0)
     setPoESkillText('skillId13', string.format("+%d/s", poeStats.manaRegen or 0), poeStats.manaRegen or 0)
     setPoESkillText('skillId14', string.format("%d%%",  poeStats.critMulti or 0), poeStats.critMulti or 0)
+    setPoESkillText('skillId15', string.format("+%d",  poeStats.fireDamage or 0), poeStats.fireDamage or 0)
+    setPoESkillText('skillId16', string.format("+%d",  poeStats.iceDamage or 0), poeStats.iceDamage or 0)
+    setPoESkillText('skillId17', string.format("+%d",  poeStats.energyDamage or 0), poeStats.energyDamage or 0)
+    setPoESkillText('skillId18', string.format("+%d",  poeStats.earthDamage or 0), poeStats.earthDamage or 0)
 end
 
 function onPoEStats(protocol, opcode, buffer)
@@ -1537,6 +1545,10 @@ function onPoEStats(protocol, opcode, buffer)
     poeStats.manaLeech  = tonumber(parts[6]) or 0
     poeStats.manaRegen  = tonumber(parts[7]) or 0
     poeStats.critMulti  = tonumber(parts[8]) or 0
+    poeStats.fireDamage = tonumber(parts[9]) or 0
+    poeStats.iceDamage  = tonumber(parts[10]) or 0
+    poeStats.energyDamage = tonumber(parts[11]) or 0
+    poeStats.earthDamage  = tonumber(parts[12]) or 0
 
     updatePoESkills()
 end

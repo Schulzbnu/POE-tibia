@@ -3,6 +3,15 @@
 
 dofile('data/lib/poe_stats.lua')
 
+local ELEMENTAL_DAMAGE_CONFIG = {
+    { storage = PoeStats.STORAGE_FIRE_DAMAGE,   combatType = COMBAT_FIREDAMAGE,  effect = CONST_ME_HITBYFIRE },
+    { storage = PoeStats.STORAGE_ICE_DAMAGE,    combatType = COMBAT_ICEDAMAGE,   effect = CONST_ME_ICEATTACK },
+    { storage = PoeStats.STORAGE_ENERGY_DAMAGE, combatType = COMBAT_ENERGYDAMAGE, effect = CONST_ME_ENERGYHIT },
+    { storage = PoeStats.STORAGE_EARTH_DAMAGE,  combatType = COMBAT_EARTHDAMAGE, effect = CONST_ME_HITBYPOISON },
+}
+
+local poeDamageGuard = {}
+
 local EQUIP_SLOTS = {
     CONST_SLOT_HEAD,
     CONST_SLOT_NECKLACE,
@@ -64,6 +73,10 @@ end
 function onHealthChange(creature, attacker, primaryDamage, primaryType, secondaryDamage, secondaryType, origin)
     -- Evento roda na VÍTIMA (creature).
 
+    if poeDamageGuard[creature:getId()] then
+        return primaryDamage, primaryType, secondaryDamage, secondaryType
+    end
+
     -- Ignora cura
     if primaryType == COMBAT_HEALING then
         return primaryDamage, primaryType, secondaryDamage, secondaryType
@@ -108,19 +121,40 @@ function onHealthChange(creature, attacker, primaryDamage, primaryType, secondar
     local manaLeech   = attacker:getStorageValue(PoeStats.STORAGE_MANA_LEECH)
     local critMulti   = attacker:getStorageValue(PoeStats.STORAGE_CRIT_MULTI)
 
+    local elementalBonuses = {}
+    local elementalSum = 0
+    for _, entry in ipairs(ELEMENTAL_DAMAGE_CONFIG) do
+        local value = math.max(0, attacker:getStorageValue(entry.storage))
+        if value > 0 then
+            table.insert(elementalBonuses, { amount = value, combatType = entry.combatType, effect = entry.effect })
+            elementalSum = elementalSum + value
+        end
+    end
+
     if critChance < 0 then critChance = 0 end
     if lifeLeech  < 0 then lifeLeech  = 0 end
     if manaLeech < 0 then manaLeech = 0 end
     if critMulti < 0 then critMulti = 0 end
 
     -- === CRÍTICO ===
+    local critMultiplier = 1.0
     if critChance > 0 then
         local roll = math.random(100)
         if roll <= critChance then
             local critMultiplier = 1.5 + (critMulti / 100)
+
             primaryDamage = math.floor((primaryDamage or 0) * critMultiplier)
             if secondaryDamage and secondaryDamage > 0 then
                 secondaryDamage = math.floor(secondaryDamage * critMultiplier)
+            end
+
+            for _, bonus in ipairs(elementalBonuses) do
+                bonus.amount = math.floor(bonus.amount * critMultiplier)
+            end
+
+            elementalSum = 0
+            for _, bonus in ipairs(elementalBonuses) do
+                elementalSum = elementalSum + bonus.amount
             end
 
             attacker:say("CRIT!", TALKTYPE_MONSTER_SAY)
@@ -130,7 +164,7 @@ function onHealthChange(creature, attacker, primaryDamage, primaryType, secondar
 
     -- === LIFE LEECH ===
     if lifeLeech > 0 then
-        local totalDamage = (primaryDamage or 0) + (secondaryDamage or 0)
+        local totalDamage = (primaryDamage or 0) + (secondaryDamage or 0) + elementalSum
         if totalDamage > 0 then
             local leechAmount = math.floor(totalDamage * (lifeLeech / 100))
             if leechAmount > 0 then
@@ -141,11 +175,20 @@ function onHealthChange(creature, attacker, primaryDamage, primaryType, secondar
     end
 
     if manaLeech > 0 then
-        local leechAmount = math.floor(totalDamage * (manaLeech / 100))
+        local leechAmount = math.floor(((primaryDamage or 0) + (secondaryDamage or 0) + elementalSum) * (manaLeech / 100))
         if leechAmount > 0 then
             attacker:addMana(leechAmount)
             attacker:getPosition():sendMagicEffect(CONST_ME_MAGIC_BLUE)
         end
+    end
+
+
+    if #elementalBonuses > 0 then
+        poeDamageGuard[creature:getId()] = true
+        for _, bonus in ipairs(elementalBonuses) do
+            doTargetCombatHealth(attacker, creature, bonus.combatType, -bonus.amount, -bonus.amount, bonus.effect)
+        end
+        poeDamageGuard[creature:getId()] = nil
     end
 
 
