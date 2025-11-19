@@ -141,7 +141,8 @@ function onHealthChange(creature, attacker, primaryDamage, primaryType, secondar
     if critChance > 0 then
         local roll = math.random(100)
         if roll <= critChance then
-            critMultiplier = 1.0 + (critMulti / 100)
+            local critMultiplier = 1.5 + (critMulti / 100)
+
             primaryDamage = math.floor((primaryDamage or 0) * critMultiplier)
             if secondaryDamage and secondaryDamage > 0 then
                 secondaryDamage = math.floor(secondaryDamage * critMultiplier)
