@@ -6,7 +6,7 @@ PoeStats = PoeStats or {}
 
 PoeStats.OPCODE = 50
 
--- Storages para guardar stats de combate
+-- Storages para guardar stats
 PoeStats.STORAGE_CRIT_CHANCE   = 90000
 PoeStats.STORAGE_LIFE_LEECH    = 90002
 PoeStats.STORAGE_BLOCK_CHANCE  = 90003
@@ -21,6 +21,8 @@ PoeStats.STORAGE_ENERGY_DAMAGE = 90011
 PoeStats.STORAGE_EARTH_DAMAGE  = 90012
 PoeStats.STORAGE_MAX_LIFE      = 90013
 PoeStats.STORAGE_MAX_MANA      = 90014
+
+-- Auxiliar
 PoeStats.STORAGE_POE_BONUS_LIFE = 90015
 PoeStats.STORAGE_POE_BONUS_MANA = 90016
 
