@@ -1,39 +1,154 @@
 local ec = EventCallback
 
+local function mergeStackableIntoContainer(container, item)
+    local itemType = ItemType(item:getId())
+
+    if not itemType:isStackable() then
+        return 0
+    end
+
+    local maxStack = 100
+    if itemType.getMaxItems then
+        maxStack = itemType:getMaxItems() or maxStack
+    elseif itemType.getStackSize then
+        maxStack = itemType:getStackSize() or maxStack
+    end
+    local movedCount = 0
+    local remaining = item:getCount()
+
+    local function tryMerge(targetContainer)
+        for _, targetItem in ipairs(targetContainer:getItems()) do
+            if remaining <= 0 then
+                return true
+            end
+
+            if targetItem:isContainer() then
+                if tryMerge(targetItem) and remaining <= 0 then
+                    return true
+                end
+            elseif targetItem:getId() == item:getId() then
+                local targetCount = targetItem:getCount()
+                if targetCount < maxStack then
+                    local space = maxStack - targetCount
+                    local toMove = math.min(space, remaining)
+                    targetItem:setCount(targetCount + toMove)
+                    remaining = remaining - toMove
+                    movedCount = movedCount + toMove
+                end
+            end
+        end
+
+        return remaining <= 0
+    end
+
+    tryMerge(container)
+
+    if remaining == 0 then
+        item:remove()
+    elseif movedCount > 0 then
+        item:transform(item:getId(), remaining)
+    end
+
+    return movedCount
+end
+
+local function moveLootToBackpack(player, corpse)
+    if not player then
+        return false, "no-player"
+    end
+
+    local backpack = player:getSlotItem(CONST_SLOT_BACKPACK)
+    if not backpack or not backpack:isContainer() then
+        return false, "no-backpack"
+    end
+
+    local items = corpse:getItems()
+    if #items == 0 then
+        return false, "no-loot"
+    end
+
+    local blockedBySlots = false
+    local movedAnyItem = false
+    for _, item in ipairs(items) do
+        if backpack:getSize() >= backpack:getCapacity() then
+            local mergedCount = mergeStackableIntoContainer(backpack, item)
+            if mergedCount > 0 then
+                movedAnyItem = true
+            end
+
+            if item and item:getParent() == corpse then
+                blockedBySlots = true
+                break
+            end
+        end
+
+        if item:moveTo(backpack) then
+            movedAnyItem = true
+        else
+            local mergedCount = mergeStackableIntoContainer(backpack, item)
+            if mergedCount > 0 then
+                movedAnyItem = true
+            end
+
+            if backpack:getSize() >= backpack:getCapacity() and item and item:getParent() == corpse then
+                blockedBySlots = true
+            end
+        end
+    end
+
+    if corpse:getSize() > 0 then
+        local reason = blockedBySlots and "backpack-full" or "partial-move"
+        return movedAnyItem, reason
+    end
+
+    return true, "success"
+end
+
 ec.onDropLoot = function(self, corpse)
-	if configManager.getNumber(configKeys.RATE_LOOT) == 0 then
-		return
-	end
+    if configManager.getNumber(configKeys.RATE_LOOT) == 0 then
+        return
+    end
 
-	local player = Player(corpse:getCorpseOwner())
-	local mType = self:getType()
-	if not player or player:getStamina() > 840 then
-		local monsterLoot = mType:getLoot()
-		for i = 1, #monsterLoot do
-			local item = corpse:createLootItem(monsterLoot[i])
-			if not item then
-				print('[Warning] DropLoot:', 'Could not add loot item to corpse.')
-			end
-		end
+    local player = Player(corpse:getCorpseOwner())
+    local mType = self:getType()
+    if not player or player:getStamina() > 840 then
+        local monsterLoot = mType:getLoot()
+        for i = 1, #monsterLoot do
+            local item = corpse:createLootItem(monsterLoot[i])
+            if not item then
+                print('[Warning] DropLoot:', 'Could not add loot item to corpse.')
+            end
+        end
 
-		if player then
-			local text = ("Loot of %s: %s"):format(mType:getNameDescription(), corpse:getContentDescription())
-			local party = player:getParty()
-			if party then
-				party:broadcastPartyLoot(text)
-			else
-				player:sendTextMessage(MESSAGE_LOOT, text)
-			end
-		end
-	else
-		local text = ("Loot of %s: nothing (due to low stamina)"):format(mType:getNameDescription())
-		local party = player:getParty()
-		if party then
-			party:broadcastPartyLoot(text)
-		else
-			player:sendTextMessage(MESSAGE_LOOT, text)
-		end
-	end
+        local lootDescription = corpse:getContentDescription()
+        local lootText = ("Loot of %s: %s"):format(mType:getNameDescription(), lootDescription)
+
+        if player then
+            local party = player:getParty()
+            if party then
+                party:broadcastPartyLoot(lootText)
+            else
+                player:sendTextMessage(MESSAGE_LOOT, lootText)
+            end
+
+            local movedAll, reason = moveLootToBackpack(player, corpse)
+            if not movedAll and corpse:getSize() > 0 then
+                local warning = "Your backpack is full. Loot remains in the corpse."
+                if reason == "no-backpack" then
+                    warning = "You need a backpack to auto loot. Loot remains in the corpse."
+                end
+                player:sendTextMessage(MESSAGE_STATUS_SMALL, warning)
+            end
+        end
+    else
+        local text = ("Loot of %s: nothing (due to low stamina)"):format(mType:getNameDescription())
+        local party = player:getParty()
+        if party then
+            party:broadcastPartyLoot(text)
+        else
+            player:sendTextMessage(MESSAGE_LOOT, text)
+        end
+    end
 end
 
 ec:register()
