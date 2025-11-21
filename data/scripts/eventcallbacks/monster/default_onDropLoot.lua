@@ -15,7 +15,12 @@ local function moveLootToBackpack(player, corpse)
 		return false, "no-loot"
 	end
 
-	if backpack:getSize() >= backpack:getCapacity() then
+	local freeSlots = backpack:getCapacity() - backpack:getSize()
+	if freeSlots <= 0 then
+		return false, "backpack-full"
+	end
+
+	if #items > freeSlots then
 		return false, "backpack-full"
 	end
 
