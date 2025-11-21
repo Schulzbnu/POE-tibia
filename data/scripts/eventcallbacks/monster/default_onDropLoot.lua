@@ -7,7 +7,12 @@ local function mergeStackableIntoContainer(container, item)
         return 0
     end
 
-    local maxStack = itemType:getMaxItems() or 100
+    local maxStack = 100
+    if itemType.getMaxItems then
+        maxStack = itemType:getMaxItems() or maxStack
+    elseif itemType.getStackSize then
+        maxStack = itemType:getStackSize() or maxStack
+    end
     local movedCount = 0
     local remaining = item:getCount()
 
