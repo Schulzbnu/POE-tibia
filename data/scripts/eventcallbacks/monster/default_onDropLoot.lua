@@ -76,7 +76,7 @@ local function moveLootToBackpack(player, corpse)
                 movedAnyItem = true
             end
 
-            if item and not item:isRemoved() then
+            if item and item:getParent() == corpse then
                 blockedBySlots = true
                 break
             end
@@ -90,7 +90,7 @@ local function moveLootToBackpack(player, corpse)
                 movedAnyItem = true
             end
 
-            if backpack:getSize() >= backpack:getCapacity() then
+            if backpack:getSize() >= backpack:getCapacity() and item and item:getParent() == corpse then
                 blockedBySlots = true
             end
         end
