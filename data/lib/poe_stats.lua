@@ -19,6 +19,8 @@ PoeStats.STORAGE_FIRE_DAMAGE   = 90009
 PoeStats.STORAGE_ICE_DAMAGE    = 90010
 PoeStats.STORAGE_ENERGY_DAMAGE = 90011
 PoeStats.STORAGE_EARTH_DAMAGE  = 90012
+PoeStats.STORAGE_MAX_LIFE      = 90013
+PoeStats.STORAGE_MAX_MANA      = 90014
 
 
 function PoeStats.getTotalStats(player)
@@ -35,6 +37,8 @@ function PoeStats.getTotalStats(player)
         iceDamage   = 0,
         energyDamage = 0,
         earthDamage = 0,
+        maxLife     = 0,
+        maxMana     = 0,
     }
 
     for _, slot in ipairs(PoeItemMods.EQUIP_SLOTS) do
@@ -67,6 +71,10 @@ function PoeStats.getTotalStats(player)
                         totals.energyDamage = (totals.energyDamage or 0) + (m.value or 0)
                     elseif m.id == "earthDamage" then
                         totals.earthDamage = (totals.earthDamage or 0) + (m.value or 0)
+                    elseif m.id == "maxLife" then
+                        totals.maxLife = (totals.maxLife or 0) + (m.value or 0)
+                    elseif m.id == "maxMana" then
+                        totals.maxMana = (totals.maxMana or 0) + (m.value or 0)
 
                     end
                     -- aqui você adiciona mais atributos conforme for criando
@@ -127,6 +135,49 @@ local function applyRegen(player, lifeRegen, manaRegen)
 end
 
 
+local function applyMaxStats(player, maxLife, maxMana)
+    if not player or not player:isPlayer() then
+        return
+    end
+
+    local subId = 9000
+    player:removeCondition(CONDITION_ATTRIBUTES, subId)
+
+    if (not maxLife or maxLife <= 0) and (not maxMana or maxMana <= 0) then
+        return
+    end
+
+    local condition = Condition(CONDITION_ATTRIBUTES)
+    condition:setParameter(CONDITION_PARAM_TICKS, -1)
+    condition:setParameter(CONDITION_PARAM_SUBID, subId)
+
+    if maxLife and maxLife > 0 then
+        condition:setParameter(CONDITION_PARAM_STAT_MAXHITPOINTS, maxLife)
+    end
+
+    if maxMana and maxMana > 0 then
+        condition:setParameter(CONDITION_PARAM_STAT_MAXMANAPOINTS, maxMana)
+    end
+
+    player:addCondition(condition)
+
+    -- Garante que vida/mana atuais não fiquem acima do novo limite.
+    local maxHealth = player:getMaxHealth()
+    local currentHealth = player:getHealth()
+    if currentHealth > maxHealth then
+        player:addHealth(maxHealth - currentHealth)
+    end
+
+    local maxManaPoints = player:getMaxMana()
+    local currentMana = player:getMana()
+    if currentMana > maxManaPoints then
+        player:addMana(maxManaPoints - currentMana)
+    end
+end
+
+
+PoeStats.applyMaxStats = applyMaxStats
+
 
 function PoeStats.recalculate(player)
     if not player or not player:isPlayer() then
@@ -148,24 +199,27 @@ function PoeStats.recalculate(player)
     player:setStorageValue(PoeStats.STORAGE_ICE_DAMAGE, totals.iceDamage)
     player:setStorageValue(PoeStats.STORAGE_ENERGY_DAMAGE, totals.energyDamage)
     player:setStorageValue(PoeStats.STORAGE_EARTH_DAMAGE, totals.earthDamage)
+    player:setStorageValue(PoeStats.STORAGE_MAX_LIFE, totals.maxLife)
+    player:setStorageValue(PoeStats.STORAGE_MAX_MANA, totals.maxMana)
 
 
         -- Fora de combate: conditions
     applyMoveSpeed(player, totals.movespeed)
     applyRegen(player, totals.lifeRegen, totals.manaRegen)
+    PoeStats.applyMaxStats(player, totals.maxLife, totals.maxMana)
 
-    PoeStats.sendToPlayer(player)
+    PoeStats.sendToPlayer(player, totals)
 end
 
-function PoeStats.sendToPlayer(player)
+function PoeStats.sendToPlayer(player, totals)
     if not player or not player:isPlayer() then
         return
     end
 
-    local totals = PoeStats.getTotalStats(player)
+    totals = totals or PoeStats.getTotalStats(player)
 
     local buffer = string.format(
-        "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d",
+        "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d",
         totals.critChance or 0,
         totals.lifeLeech or 0,
         totals.blockChance or 0,
@@ -177,7 +231,9 @@ function PoeStats.sendToPlayer(player)
         totals.fireDamage or 0,
         totals.iceDamage or 0,
         totals.energyDamage or 0,
-        totals.earthDamage or 0
+        totals.earthDamage or 0,
+        totals.maxLife or 0,
+        totals.maxMana or 0
     )
 
     print("[POE] sendToPlayer -> " .. buffer) -- DEBUG no console do TFS
