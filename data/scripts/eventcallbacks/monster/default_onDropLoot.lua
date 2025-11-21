@@ -10,20 +10,26 @@ local function moveLootToBackpack(player, corpse)
                 return false, "no-backpack"
         end
 
-        local hasLoot = false
-        local movedAll = true
-        for _, item in ipairs(corpse:getItems()) do
-                hasLoot = true
-                if not item:moveTo(backpack) then
-                        movedAll = false
-                end
-        end
-
-        if not hasLoot then
+        local items = corpse:getItems()
+        if #items == 0 then
                 return false, "no-loot"
         end
 
-        return movedAll, movedAll and "success" or "partial"
+        local movedItems = {}
+        for _, item in ipairs(items) do
+                if item:moveTo(backpack) then
+                        table.insert(movedItems, item)
+                else
+                        for index = #movedItems, 1, -1 do
+                                if not movedItems[index]:moveTo(corpse) then
+                                        print('[Warning] DropLoot:', 'Could not move loot back to corpse after failing to auto loot.')
+                                end
+                        end
+                        return false, "backpack-full"
+                end
+        end
+
+        return true, "success"
 end
 
 ec.onDropLoot = function(self, corpse)
