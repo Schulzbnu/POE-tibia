@@ -1,0 +1,100 @@
+PoeAutolootWindow < MainWindow
+  id: poeAutolootWindow
+  size: 500 350
+  text: "PoE Loot Filter"
+
+  @onEscape: modules.game_poe_autoloot.hide()
+
+  Label
+    id: titleLabel
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 10
+    text: "PoE Loot Filter"
+    text-align: center
+
+  CheckBox
+    id: enableAutolootCheck
+    anchors.top: titleLabel.bottom
+    anchors.left: parent.left
+    margin-top: 10
+    margin-left: 10
+    text: "Ativar Autoloot"
+
+  Label
+    id: rarityLabel
+    anchors.top: enableAutolootCheck.bottom
+    anchors.left: parent.left
+    margin-top: 10
+    margin-left: 10
+    text: "Raridade mínima:"
+
+  ComboBox
+    id: rarityCombo
+    anchors.top: rarityLabel.bottom
+    anchors.left: rarityLabel.left
+    margin-top: 5
+    width: 150
+
+  Label
+    id: typeLabel
+    anchors.top: rarityCombo.bottom
+    anchors.left: rarityLabel.left
+    margin-top: 10
+    text: "Tipo do item:"
+
+  ComboBox
+    id: typeCombo
+    anchors.top: typeLabel.bottom
+    anchors.left: typeLabel.left
+    margin-top: 5
+    width: 150
+
+  Label
+    id: itemsLabel
+    anchors.top: typeCombo.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 10
+    margin-left: 10
+    text: "Itens filtrados:"
+
+  UITable
+    id: itemsTable
+    anchors.top: itemsLabel.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: buttonsPanel.top
+    margin-left: 10
+    margin-right: 10
+    margin-top: 5
+
+  UIPanel
+    id: buttonsPanel
+    height: 40
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    margin-bottom: 10
+
+    Button
+      id: addItemButton
+      anchors.left: parent.left
+      margin-left: 10
+      margin-top: 5
+      text: "Add Item"
+
+    Button
+      id: removeItemButton
+      anchors.left: addItemButton.right
+      margin-left: 10
+      margin-top: 5
+      text: "Remover"
+
+    Button
+      id: saveButton
+      anchors.right: parent.right
+      margin-right: 10
+      margin-top: 5
+      text: "Salvar"
