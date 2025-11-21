@@ -194,17 +194,16 @@ function PoeStats.recalculate(player)
     applyMoveSpeed(player, totals.movespeed)
     applyRegen(player, totals.lifeRegen, totals.manaRegen)
     PoeStats.applyMaxStats(player, totals.maxLife, totals.maxMana)
-    player:sendStats()
 
-    PoeStats.sendToPlayer(player)
+    PoeStats.sendToPlayer(player, totals)
 end
 
-function PoeStats.sendToPlayer(player)
+function PoeStats.sendToPlayer(player, totals)
     if not player or not player:isPlayer() then
         return
     end
 
-    local totals = PoeStats.getTotalStats(player)
+    totals = totals or PoeStats.getTotalStats(player)
 
     local buffer = string.format(
         "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d",
