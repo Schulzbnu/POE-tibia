@@ -22,6 +22,11 @@ local function moveLootToBackpack(player, corpse)
 	local blockedBySlots = false
 	local movedAnyItem = false
 	for _, item in ipairs(items) do
+		if backpack:getSize() >= backpack:getCapacity() then
+			blockedBySlots = true
+			break
+		end
+
 		if item:moveTo(backpack) then
 			movedAnyItem = true
 		else
