@@ -1,5 +1,41 @@
 local ec = EventCallback
 
+local function moveLootToBackpack(player, corpse)
+	if not player then
+		return false, "no-player"
+	end
+
+	local backpack = player:getSlotItem(CONST_SLOT_BACKPACK)
+	if not backpack or not backpack:isContainer() then
+		return false, "no-backpack"
+	end
+
+	local items = corpse:getItems()
+	if #items == 0 then
+		return false, "no-loot"
+	end
+
+	if backpack:getSize() >= backpack:getCapacity() then
+		return false, "backpack-full"
+	end
+
+	local movedItems = {}
+	for _, item in ipairs(items) do
+		if item:moveTo(backpack) then
+			table.insert(movedItems, item)
+		else
+			for index = #movedItems, 1, -1 do
+				if not movedItems[index]:moveTo(corpse) then
+					print('[Warning] DropLoot:', 'Could not move loot back to corpse after failing to auto loot.')
+				end
+			end
+			return false, "backpack-full"
+		end
+	end
+
+	return true, "success"
+end
+
 ec.onDropLoot = function(self, corpse)
 	if configManager.getNumber(configKeys.RATE_LOOT) == 0 then
 		return
@@ -16,13 +52,24 @@ ec.onDropLoot = function(self, corpse)
 			end
 		end
 
+		local lootDescription = corpse:getContentDescription()
+		local lootText = ("Loot of %s: %s"):format(mType:getNameDescription(), lootDescription)
+
 		if player then
-			local text = ("Loot of %s: %s"):format(mType:getNameDescription(), corpse:getContentDescription())
 			local party = player:getParty()
 			if party then
-				party:broadcastPartyLoot(text)
+				party:broadcastPartyLoot(lootText)
 			else
-				player:sendTextMessage(MESSAGE_LOOT, text)
+				player:sendTextMessage(MESSAGE_LOOT, lootText)
+			end
+
+			local movedAll, reason = moveLootToBackpack(player, corpse)
+			if not movedAll and corpse:getSize() > 0 then
+				local warning = "Your backpack is full. Loot remains in the corpse."
+				if reason == "no-backpack" then
+					warning = "You need a backpack to auto loot. Loot remains in the corpse."
+				end
+				player:sendTextMessage(MESSAGE_STATUS_SMALL, warning)
 			end
 		end
 	else
