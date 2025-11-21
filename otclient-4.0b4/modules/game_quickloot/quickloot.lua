@@ -1,7 +1,5 @@
 QuickLoot = {}
 
-local quickLootButton = nil
-
 local function getFilter(id)
     local filter = {
         [1] = 0,
@@ -29,14 +27,6 @@ function quickLootController:onInit()
     quickLootController:registerEvents(g_game, {
         onQuickLootContainers = QuickLoot.start
     })
-
-    quickLootButton = modules.game_mainpanel.addToggleButton('quickLootButton', tr('Autoloot'),
-        '/images/options/bot', function()
-            QuickLoot.toggle()
-        end, false, 3)
-    quickLootButton:setTooltip(tr('Configure autoloot filters.'))
-    quickLootButton:setVisible(false)
-
     Keybind.new("Loot", "Quick Loot Nearby Corpses", "Alt+Q", "")
     Keybind.bind("Loot", "Quick Loot Nearby Corpses", {
       {
@@ -54,23 +44,11 @@ function quickLootController:onTerminate()
         QuickLoot.mouseGrabberWidget = nil
     end
 
-    if quickLootButton then
-        quickLootButton:destroy()
-        quickLootButton = nil
-    end
-
     QuickLoot = {}
 end
 
 function quickLootController:onGameStart()
-    local featureEnabled = g_game.getFeature(GameThingQuickLoot)
-
-    if quickLootButton then
-        quickLootButton:setVisible(featureEnabled)
-        quickLootButton:setOn(false)
-    end
-
-    if not featureEnabled then
+    if not g_game.getFeature(GameThingQuickLoot) then
         return
     end
     if not QuickLoot.mouseGrabberWidget then
@@ -95,7 +73,10 @@ function quickLootController:onGameEnd()
         return
     end
     QuickLoot.save()
-    QuickLoot.hide()
+    QuickLoot.toggle()
+    if quickLootController.ui:isVisible() then
+        quickLootController.ui:hide()
+    end
 end
 
 function QuickLoot.Define()
@@ -440,7 +421,7 @@ function QuickLoot.Define()
     end
 
     function QuickLoot.toggle()
-        if not quickLootController.ui or not g_game.getFeature(GameThingQuickLoot) then
+        if not quickLootController.ui then
             return
         end
 
@@ -462,9 +443,6 @@ function QuickLoot.Define()
         quickLootController.ui:show()
         quickLootController.ui:raise()
         quickLootController.ui:focus()
-        if quickLootButton then
-            quickLootButton:setOn(true)
-        end
 
     end
 
@@ -473,9 +451,6 @@ function QuickLoot.Define()
             return
         end
         quickLootController.ui:hide()
-        if quickLootButton then
-            quickLootButton:setOn(false)
-        end
     end
 
 end
