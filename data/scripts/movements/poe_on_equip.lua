@@ -34,7 +34,7 @@ end
 
 -- REGISTRO: aqui você coloca os IDs dos itens que quer que disparem o evento
 -- EXEMPLO: helmets 2460, 2461, 2462 no slot head
-poeEquip:id(2136)
+poeEquip:id(2136,2494)
 poeEquip:register()
 
 -------------------------------------------------
@@ -60,5 +60,5 @@ function poeDeEquip.onDeEquip(player, item, slot, isCheck)
 end
 
 -- MESMOS IDs para o deequip
-poeDeEquip:id(2136)
+poeDeEquip:id(2136,2494)
 poeDeEquip:register()

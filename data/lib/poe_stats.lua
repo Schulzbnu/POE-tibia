@@ -160,6 +160,7 @@ local function applyMaxStats(player, maxLife, maxMana)
         end
 
         player:addCondition(condition)
+        print("cheguei")
     end
 
     -- Garante que vida/mana atuais não fiquem acima do novo limite.
@@ -175,9 +176,6 @@ local function applyMaxStats(player, maxLife, maxMana)
         player:addMana(maxManaPoints - currentMana)
     end
 end
-
-
-PoeStats.applyMaxStats = applyMaxStats
 
 
 function PoeStats.recalculate(player)
@@ -207,7 +205,7 @@ function PoeStats.recalculate(player)
         -- Fora de combate: conditions
     applyMoveSpeed(player, totals.movespeed)
     applyRegen(player, totals.lifeRegen, totals.manaRegen)
-    PoeStats.applyMaxStats(player, totals.maxLife, totals.maxMana)
+    applyMaxStats(player, totals.maxLife, totals.maxMana)
 
     PoeStats.sendToPlayer(player, totals)
 end
