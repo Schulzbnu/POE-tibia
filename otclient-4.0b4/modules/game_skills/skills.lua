@@ -573,6 +573,10 @@ end
 
 function resetSkillColor(id)
     local skill = skillsWindow:recursiveGetChildById(id)
+    if not skill then
+        -- widget não existe na UI, só ignora
+        return
+    end
     local widget = skill:getChildById('value')
     widget:setColor('#bbbbbb')
 end
