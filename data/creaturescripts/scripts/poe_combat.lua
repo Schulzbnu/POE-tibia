@@ -157,7 +157,7 @@ function onHealthChange(creature, attacker, primaryDamage, primaryType, secondar
                 elementalSum = elementalSum + bonus.amount
             end
 
-            attacker:say("CRIT!", TALKTYPE_MONSTER_SAY)
+            creature:say("CRITICAL!", TALKTYPE_MONSTER_SAY)
             creature:getPosition():sendMagicEffect(CONST_ME_CRITICAL_DAMAGE)
         end
     end
