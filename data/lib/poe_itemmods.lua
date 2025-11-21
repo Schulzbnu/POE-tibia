@@ -246,6 +246,16 @@ PoeItemMods.MOD_POOLS = {
                 { tier = 2, min = 5,  max = 9  },
             },
         },
+        {
+            id = "maxMana",
+            text = "+%d maximum mana",
+            category = "utility",
+            tiers = {
+                { tier = 1, min = 60, max = 80 },
+                { tier = 2, min = 40, max = 59 },
+                { tier = 3, min = 20, max = 39 },
+            },
+        },
     },
 
     amulet = {

@@ -235,6 +235,18 @@ MiniWindow
       SkillValueLabel
 
     SmallSkillButton
+      id: skillId19
+      SkillNameLabel
+        !text: tr('Maximum Life')
+      SkillValueLabel
+
+    SmallSkillButton
+      id: skillId20
+      SkillNameLabel
+        !text: tr('Maximum Mana')
+      SkillValueLabel
+
+    SmallSkillButton
       id: skillId15
       SkillNameLabel
         !text: tr('Fire Damage')
