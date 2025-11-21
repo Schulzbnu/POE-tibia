@@ -6,6 +6,7 @@ local storeAmount = 0
 
 local chaseModeRadioGroup
 local controlButton1400 = nil
+local quickLootButton = nil
 local optionPanel = nil
 local buttonConfigs = {}
 local buttonOrder = {}
@@ -198,6 +199,10 @@ function optionsController:onTerminate()
         controlButton1400:destroy()
         controlButton1400 = nil
     end
+    if quickLootButton then
+        quickLootButton:destroy()
+        quickLootButton = nil
+    end
 end
 
 function optionsController:onGameStart()
@@ -205,6 +210,20 @@ function optionsController:onGameStart()
     refreshOptionsSizes()
     modules.game_interface.setupOptionsMainButton()
     modules.client_options.setupOptionsMainButton()
+    if g_game.getFeature(GameThingQuickLoot) then
+        local quickLootModule = g_modules and g_modules.getModule('game_quickloot')
+        if quickLootModule and not quickLootModule:isLoaded() then
+            quickLootModule:load()
+        end
+        if quickLootModule and quickLootModule:isLoaded() then
+            quickLootButton = quickLootButton or modules.game_mainpanel.addToggleButton('quickLootButton', tr('Quick Loot'),
+                '/modules/game_quickloot/images/container', function() modules.game_quickloot.QuickLoot.toggle() end, false, 2)
+            quickLootButton:setOn(false)
+            quickLootButton:setVisible(true)
+        end
+    elseif quickLootButton then
+        quickLootButton:setVisible(false)
+    end
     local getOptionsPanel = optionsController.ui.onPanel.options
     local children = getOptionsPanel:getChildren()
     table.sort(children, function(a, b)
