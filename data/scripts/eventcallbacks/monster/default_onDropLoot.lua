@@ -77,31 +77,36 @@ local function moveLootToBackpack(player, corpse)
 
     local blockedBySlots = false
     local movedAnyItem = false
-    for _, item in ipairs(items) do
-        if backpack:getSize() >= backpack:getCapacity() then
-            local mergedCount = mergeStackableIntoContainer(backpack, item)
-            if mergedCount > 0 then
-                movedAnyItem = true
-            end
 
-            if item and item:getParent() == corpse then
-                blockedBySlots = true
-                break
-            end
+    for _, item in ipairs(items) do
+        if not item then
+            goto continue
         end
 
+        -- 1) SEMPRE tentar agrupar primeiro
+        local mergedCount = mergeStackableIntoContainer(backpack, item)
+        if mergedCount > 0 then
+            movedAnyItem = true
+        end
+
+        -- se o item foi totalmente consumido, já saiu do corpse
+        if not item or item:getParent() ~= corpse then
+            goto continue
+        end
+
+        -- 2) se a bag está cheia, não tenta criar novo slot pra esse item
+        if backpack:getSize() >= backpack:getCapacity() then
+            blockedBySlots = true
+            -- não dá break: outros itens ainda podem agrupar em stacks existentes
+            goto continue
+        end
+
+        -- 3) ainda há slot livre, tenta mover o que sobrou
         if item:moveTo(backpack) then
             movedAnyItem = true
-        else
-            local mergedCount = mergeStackableIntoContainer(backpack, item)
-            if mergedCount > 0 then
-                movedAnyItem = true
-            end
-
-            if backpack:getSize() >= backpack:getCapacity() and item and item:getParent() == corpse then
-                blockedBySlots = true
-            end
         end
+
+        ::continue::
     end
 
     if corpse:getSize() > 0 then
