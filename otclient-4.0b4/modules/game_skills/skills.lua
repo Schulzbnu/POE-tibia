@@ -17,7 +17,9 @@ local poeStats = {
   fireDamage = 0,
   iceDamage = 0,
   energyDamage = 0,
-  earthDamage = 0
+  earthDamage = 0,
+  maxLife = 0,
+  maxMana = 0
 }
 
 function init()
@@ -1525,10 +1527,12 @@ function updatePoESkills()
     setPoESkillText('skillId16', string.format("+%d",  poeStats.iceDamage or 0), poeStats.iceDamage or 0)
     setPoESkillText('skillId17', string.format("+%d",  poeStats.energyDamage or 0), poeStats.energyDamage or 0)
     setPoESkillText('skillId18', string.format("+%d",  poeStats.earthDamage or 0), poeStats.earthDamage or 0)
+    setPoESkillText('skillId19', string.format("+%d",  poeStats.maxLife or 0), poeStats.maxLife or 0)
+    setPoESkillText('skillId20', string.format("+%d",  poeStats.maxMana or 0), poeStats.maxMana or 0)
 end
 
 function onPoEStats(protocol, opcode, buffer)
-    -- buffer vindo do servidor: "crit;leech;block;ms;regen"
+    -- buffer vindo do servidor: "crit;leech;block;ms;regen;manaLeech;manaRegen;critMulti;fire;ice;energy;earth;maxLife;maxMana"
     if not buffer or buffer == "" then        
         return
     end
@@ -1549,6 +1553,8 @@ function onPoEStats(protocol, opcode, buffer)
     poeStats.iceDamage  = tonumber(parts[10]) or 0
     poeStats.energyDamage = tonumber(parts[11]) or 0
     poeStats.earthDamage  = tonumber(parts[12]) or 0
+    poeStats.maxLife   = tonumber(parts[13]) or 0
+    poeStats.maxMana   = tonumber(parts[14]) or 0
 
     updatePoESkills()
 end
