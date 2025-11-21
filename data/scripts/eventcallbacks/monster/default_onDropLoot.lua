@@ -31,9 +31,17 @@ local function mergeStackableIntoContainer(container, item)
                 if targetCount < maxStack then
                     local space = maxStack - targetCount
                     local toMove = math.min(space, remaining)
-                    targetItem:setCount(targetCount + toMove)
-                    remaining = remaining - toMove
-                    movedCount = movedCount + toMove
+                    if targetItem.setCount then
+                        targetItem:setCount(targetCount + toMove)
+                        remaining = remaining - toMove
+                        movedCount = movedCount + toMove
+                    else
+                        local transformed = targetItem:transform(targetItem:getId(), targetCount + toMove)
+                        if transformed then
+                            remaining = remaining - toMove
+                            movedCount = movedCount + toMove
+                        end
+                    end
                 end
             end
         end
