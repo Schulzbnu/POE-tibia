@@ -15,27 +15,25 @@ local function moveLootToBackpack(player, corpse)
 		return false, "no-loot"
 	end
 
-	local freeSlots = backpack:getCapacity() - backpack:getSize()
-	if freeSlots <= 0 then
+	if backpack:getSize() >= backpack:getCapacity() then
 		return false, "backpack-full"
 	end
 
-	if #items > freeSlots then
-		return false, "backpack-full"
-	end
-
-	local movedItems = {}
+	local blockedBySlots = false
+	local movedAnyItem = false
 	for _, item in ipairs(items) do
 		if item:moveTo(backpack) then
-			table.insert(movedItems, item)
+			movedAnyItem = true
 		else
-			for index = #movedItems, 1, -1 do
-				if not movedItems[index]:moveTo(corpse) then
-					print('[Warning] DropLoot:', 'Could not move loot back to corpse after failing to auto loot.')
-				end
+			if backpack:getSize() >= backpack:getCapacity() then
+				blockedBySlots = true
 			end
-			return false, "backpack-full"
 		end
+	end
+
+	if corpse:getSize() > 0 then
+		local reason = blockedBySlots and "backpack-full" or "partial-move"
+		return movedAnyItem, reason
 	end
 
 	return true, "success"
