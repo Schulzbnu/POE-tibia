@@ -6,4 +6,4 @@ A coleta e aplicação das estatísticas adicionais do modo PoE ocorre dentro de
 - Regeneração, velocidade de movimento e bônus de vida/mana máxima são aplicados via `Condition` para que o cliente receba o efeito imediatamente.
 - `PoeStats.sendToPlayer(player, totals)` empacota os valores calculados e envia para o opcode estendido configurado em `PoeStats.OPCODE`.
 
-Sempre que `poe_on_equip.lua` for acionado por um movimento de equipar ou desequipar, `PoeStats.recalculate` é chamado para manter as storages, conditions e o payload do cliente sincronizados.
+ Sempre que `poe_on_equip.lua` for acionado por um movimento de equipar ou desequipar, `PoeStats.recalculate` é chamado para manter as storages, conditions e o payload do cliente sincronizados. Ao recalcular atributos máximos, a rotina também reduz a vida/mana atuais caso tenham ficado acima do novo limite após a remoção de bônus temporários.

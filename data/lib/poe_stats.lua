@@ -141,7 +141,7 @@ local function applyMaxStats(player, maxLife, maxMana)
     end
 
     local subId = 9000
-    player:removeCondition(CONDITION_ATTRIBUTES, CONDITIONID_DEFAULT, subId)
+    player:removeCondition(CONDITION_ATTRIBUTES, subId)
 
     if (not maxLife or maxLife <= 0) and (not maxMana or maxMana <= 0) then
         return
@@ -160,6 +160,19 @@ local function applyMaxStats(player, maxLife, maxMana)
     end
 
     player:addCondition(condition)
+
+    -- Garante que vida/mana atuais não fiquem acima do novo limite.
+    local maxHealth = player:getMaxHealth()
+    local currentHealth = player:getHealth()
+    if currentHealth > maxHealth then
+        player:addHealth(maxHealth - currentHealth)
+    end
+
+    local maxManaPoints = player:getMaxMana()
+    local currentMana = player:getMana()
+    if currentMana > maxManaPoints then
+        player:addMana(maxManaPoints - currentMana)
+    end
 end
 
 
