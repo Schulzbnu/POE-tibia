@@ -15,9 +15,10 @@ end
 
 local trackedItems = { 2136, 2494 }
 
-local function registerPoeMoveEvent(eventType, logLabel)
+local function registerPoeMoveEvent(eventType, logLabel, itemId)
     local event = MoveEvent()
     event:type(eventType)
+    event:id(itemId)
 
     if eventType == "equip" then
         function event.onEquip(player, item, slot, isCheck)
@@ -49,12 +50,10 @@ local function registerPoeMoveEvent(eventType, logLabel)
         end
     end
 
-    for _, itemId in ipairs(trackedItems) do
-        event:id(itemId)
-    end
-
     event:register()
 end
 
-registerPoeMoveEvent("equip", "onEquip")
-registerPoeMoveEvent("deequip", "onDeEquip")
+for _, itemId in ipairs(trackedItems) do
+    registerPoeMoveEvent("equip", "onEquip", itemId)
+    registerPoeMoveEvent("deequip", "onDeEquip", itemId)
+end
