@@ -101,7 +101,6 @@ function onHealthChange(creature, attacker, primaryDamage, primaryType, secondar
     if blockChance > 0 then
         local rollBlock = math.random(100)
         if rollBlock <= blockChance then
-            creature:say("BLOCK!", TALKTYPE_MONSTER_SAY)
             creature:getPosition():sendMagicEffect(CONST_ME_BLOCKHIT)
 
             -- bloqueia todo o dano
@@ -156,8 +155,7 @@ function onHealthChange(creature, attacker, primaryDamage, primaryType, secondar
             for _, bonus in ipairs(elementalBonuses) do
                 elementalSum = elementalSum + bonus.amount
             end
-
-            creature:say("CRITICAL!", TALKTYPE_MONSTER_SAY)
+           
             creature:getPosition():sendMagicEffect(CONST_ME_CRITICAL_DAMAGE)
         end
     end
