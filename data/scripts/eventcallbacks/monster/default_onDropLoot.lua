@@ -60,6 +60,27 @@ local function mergeStackableIntoContainer(container, item)
     return movedCount
 end
 
+local function collectPlayerContainers(root)
+    local containers = {}
+    local queue = { root }
+    local index = 1
+
+    while queue[index] do
+        local container = queue[index]
+        containers[#containers + 1] = container
+
+        for _, item in ipairs(container:getItems()) do
+            if item:isContainer() then
+                queue[#queue + 1] = item
+            end
+        end
+
+        index = index + 1
+    end
+
+    return containers
+end
+
 local function moveLootToBackpack(player, corpse)
     if not player then
         return false, "no-player"
@@ -70,6 +91,7 @@ local function moveLootToBackpack(player, corpse)
         return false, "no-backpack"
     end
 
+    local lootContainers = collectPlayerContainers(backpack)
     local items = corpse:getItems()
     if #items == 0 then
         return false, "no-loot"
@@ -94,16 +116,21 @@ local function moveLootToBackpack(player, corpse)
             goto continue
         end
 
-        -- 2) se a bag está cheia, não tenta criar novo slot pra esse item
-        if backpack:getSize() >= backpack:getCapacity() then
-            blockedBySlots = true
-            -- não dá break: outros itens ainda podem agrupar em stacks existentes
-            goto continue
+        -- 2) tentar mover para o primeiro container com espaço livre
+        local moved = false
+        for _, container in ipairs(lootContainers) do
+            if container:getSize() < container:getCapacity() then
+                moved = item:moveTo(container)
+            end
+
+            if moved then
+                movedAnyItem = true
+                break
+            end
         end
 
-        -- 3) ainda há slot livre, tenta mover o que sobrou
-        if item:moveTo(backpack) then
-            movedAnyItem = true
+        if not moved then
+            blockedBySlots = true
         end
 
         ::continue::
