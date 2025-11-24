@@ -4,11 +4,14 @@ function Monster:onDropLoot(corpse)
 	end
 end
 
-function Monster:onSpawn(position, startup, artificial)
+function Monster:onSpawn(position, startup, artificial)	
 	if hasEventCallback(EVENT_CALLBACK_ONSPAWN) then		
-		return EventCallback(EVENT_CALLBACK_ONSPAWN, self, position, startup, artificial)
+		if not self:registerEvent("PoeCombat") then
+			self:registerEvent("PoeCombat")
+		end
+		return EventCallback(EVENT_CALLBACK_ONSPAWN, self, position, startup, artificial)		
 	else
-		self:registerEvent("PoeCombat")
+		self:registerEvent("PoeCombat")		
 		return true
 	end
 end

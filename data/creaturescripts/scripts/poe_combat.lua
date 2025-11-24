@@ -101,9 +101,9 @@ function onHealthChange(creature, attacker, primaryDamage, primaryType, secondar
     if blockChance > 0 then
         local rollBlock = math.random(100)
         if rollBlock <= blockChance then
-            creature:getPosition():sendMagicEffect(CONST_ME_BLOCKHIT)
-
-            -- bloqueia todo o dano
+            creature:getPosition():sendMagicEffect(CONST_ME_BLOCKHIT)          
+            creature:sendTextMessage(MESSAGE_STATUS_DEFAULT,"BLOCK! Voce bloqueou um ataque.")
+            
             return 0, primaryType, 0, secondaryType
         end
     end
