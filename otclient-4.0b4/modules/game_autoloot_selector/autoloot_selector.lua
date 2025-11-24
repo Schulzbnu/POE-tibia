@@ -6,10 +6,6 @@ local autolootButton = nil
 autolootSelectorController = Controller:new()
 autolootSelectorController:setUI('autoloot_selector')
 
-local function isQuickLootAvailable()
-    return g_game.getFeature(GameThingQuickLoot)
-end
-
 local function getContainerById(id)
     for containerId, container in pairs(g_game.getContainers()) do
         if containerId == id then
@@ -33,14 +29,6 @@ local function getContainerLabel(item, container)
     end
 
     return tr('Container %s', item:getId())
-end
-
-local function updateButtonState()
-    if not autolootButton then
-        return
-    end
-
-    autolootButton:setVisible(isQuickLootAvailable())
 end
 
 function autolootSelectorController:onInit()
@@ -70,10 +58,6 @@ function autolootSelectorController:onTerminate()
 end
 
 function AutolootSelector.onGameStart()
-    if not isQuickLootAvailable() then
-        return
-    end
-
     if not autolootButton then
         autolootButton = modules.client_topmenu.addRightGameToggleButton('autolootSelector', tr('Autoloot Container'),
             '/game_quickloot/images/choose', AutolootSelector.toggle, false)
@@ -83,7 +67,6 @@ function AutolootSelector.onGameStart()
     AutolootSelector.refreshContainerList()
     AutolootSelector.updateSelectedContainer()
     AutolootSelector.refreshFallbackCheckbox()
-    updateButtonState()
 end
 
 function AutolootSelector.onGameEnd()
@@ -111,10 +94,6 @@ function AutolootSelector.toggle()
 end
 
 function AutolootSelector.show()
-    if not isQuickLootAvailable() then
-        return
-    end
-
     autolootSelectorController.ui:show()
     autolootSelectorController.ui:raise()
     autolootSelectorController.ui:focus()
@@ -138,10 +117,6 @@ function AutolootSelector.refreshFallbackCheckbox()
 end
 
 function AutolootSelector.toggleFallback(isChecked)
-    if not isQuickLootAvailable() then
-        return
-    end
-
     AutolootSelector.fallbackToMain = isChecked
     g_game.openContainerQuickLoot(3, nil, {}, nil, nil, isChecked)
 end
