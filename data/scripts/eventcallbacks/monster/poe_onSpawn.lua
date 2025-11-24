@@ -1,3 +1,5 @@
+dofile('data/lib/poe_itemmods.lua')
+
 local ec = EventCallback
 
 local RARITY_SKULL_MAP = {
@@ -32,9 +34,13 @@ ec.onSpawn = function(self, position, startup, artificial)
 
     local rarityKey = resolveRarity(self)
     if rarityKey and type(rarityKey) == "string" then
-        local skullType = RARITY_SKULL_MAP[rarityKey:lower()]
-        if skullType then
-            self:setSkull(skullType)
+        local normalized = rarityKey:lower()
+        local rarityConfig = PoeItemMods.RARITIES and PoeItemMods.RARITIES[normalized]
+        if rarityConfig then
+            local skullType = RARITY_SKULL_MAP[normalized]
+            if skullType then
+                self:setSkull(skullType)
+            end
         end
     end
 
