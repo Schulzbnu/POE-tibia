@@ -9,4 +9,6 @@
 <event type="death" name="DropLoot" script="droploot.lua" />
 <event type="extendedopcode" name="ExtendedOpcode" script="extendedopcode.lua" />
 <event type="healthchange" name="PoeCombat" script="poe_combat.lua" />
+<event type="healthchange" name="PoEMonsterDamage" script="poe_monster_damage.lua" />
+
 </creaturescripts>
