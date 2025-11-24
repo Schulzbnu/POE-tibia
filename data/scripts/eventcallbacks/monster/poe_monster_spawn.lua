@@ -1,5 +1,3 @@
--- data/scripts/eventcallbacks/poe_monster_spawn_skull.lua
-
 local ec = EventCallback
 
 function ec.onSpawn(monster, position, startup, artificial)
@@ -7,7 +5,20 @@ function ec.onSpawn(monster, position, startup, artificial)
         return true
     end
 
-    PoEMonsterRarity.applySkullFromRank(monster)
+    -- Adia a lógica 1 tick para garantir ID real
+    addEvent(function()
+        if not monster or not monster:isMonster() then
+            return
+        end
+
+        local rank = PoEMonsterRarity.RANK.UNIQUE
+
+        PoEMonsterRarity.setMonsterRank(monster, rank)
+
+        PoEMonsterRarity.applySkullFromRank(monster, rank)
+        PoEMonsterRarity.applyHealthFromRank(monster, rank)
+
+    end, 1)
 
     return true
 end
