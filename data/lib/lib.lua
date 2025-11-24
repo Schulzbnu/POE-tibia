@@ -9,5 +9,3 @@ dofile('data/lib/debugging/dump.lua')
 dofile('data/lib/debugging/lua_version.lua')
 dofile('data/lib/poe_itemmods.lua')
 dofile('data/lib/poe_stats.lua')
-
-
