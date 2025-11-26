@@ -81,6 +81,56 @@ local function collectPlayerContainers(root)
     return containers
 end
 
+-- Adds a fully rolled loot item to the corpse (chance already resolved).
+-- Uses stack sizes when possible and falls back to one-by-one creation for non-stackables.
+local function addRolledLootItem(corpse, lootItem)
+    if not lootItem then
+        return false
+    end
+
+    local itemId = lootItem.itemId or lootItem.id
+    if not itemId then
+        return false
+    end
+
+    local itemType = ItemType(itemId)
+    if not itemType or itemType:getId() == 0 then
+        return false
+    end
+
+    local count = math.max(1, lootItem.count or 1)
+
+    if itemType:isStackable() then
+        local tmpItem = Game.createItem(itemId, count)
+        if not tmpItem then
+            return false
+        end
+
+        local ret = corpse:addItemEx(tmpItem)
+        if ret ~= RETURNVALUE_NOERROR then
+            tmpItem:remove()
+            return false
+        end
+
+        return true
+    end
+
+    for _ = 1, count do
+        local tmpItem = Game.createItem(itemId, 1)
+        if not tmpItem then
+            return false
+        end
+
+        local ret = corpse:addItemEx(tmpItem)
+        if ret ~= RETURNVALUE_NOERROR then
+            tmpItem:remove()
+            return false
+        end
+    end
+
+    return true
+end
+
 local function moveLootToBackpack(player, corpse)
     if not player then
         return false, "no-player"
@@ -152,11 +202,25 @@ ec.onDropLoot = function(self, corpse)
     local player = Player(corpse:getCorpseOwner())
     local mType = self:getType()
     if not player or player:getStamina() > 840 then
-        local monsterLoot = mType:getLoot()
-        for i = 1, #monsterLoot do
-            local item = corpse:createLootItem(monsterLoot[i])
-            if not item then
-                print('[Warning] DropLoot:', 'Could not add loot item to corpse.')
+        local lootItems = {}
+        if PoEMonsterLoot and PoEMonsterLoot.rollLoot then
+            lootItems = PoEMonsterLoot.rollLoot(self)
+        end
+
+        if #lootItems == 0 then
+            local monsterLoot = mType:getLoot()
+            for i = 1, #monsterLoot do
+                local item = corpse:createLootItem(monsterLoot[i])
+                if not item then
+                    print('[Warning] DropLoot:', 'Could not add loot item to corpse.')
+                end
+            end
+        else
+            for _, lootItem in ipairs(lootItems) do
+                local created = addRolledLootItem(corpse, lootItem)
+                if not created then
+                    print('[Warning] DropLoot:', 'Could not add loot item to corpse.')
+                end
             end
         end
 
@@ -188,6 +252,10 @@ ec.onDropLoot = function(self, corpse)
         else
             player:sendTextMessage(MESSAGE_LOOT, text)
         end
+    end
+
+    if PoEMonsterRarity and PoEMonsterRarity.clearMonsterData then
+        PoEMonsterRarity.clearMonsterData(self)
     end
 end
 
