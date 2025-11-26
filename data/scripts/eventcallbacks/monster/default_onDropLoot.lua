@@ -270,11 +270,11 @@ ec.onDropLoot = function(self, corpse)
             end
         end
 
-        if player then
-            depositCorpseCoins(player, corpse)
-
+        if player then         
             local lootDescription = corpse:getContentDescription()
             local lootText = ("Loot of %s: %s"):format(mType:getNameDescription(), lootDescription)
+
+            depositCorpseCoins(player, corpse)
 
             local party = player:getParty()
             if party then
