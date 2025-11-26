@@ -11,12 +11,11 @@ function ec.onSpawn(monster, position, startup, artificial)
             return
         end
 
-        local rank = PoEMonsterRarity.RANK.UNIQUE
-
         PoEMonsterRarity.setMonsterRank(monster, rank)
+        PoEMonsterRarity.setMonsterLevel(monster, level)
 
         PoEMonsterRarity.applySkullFromRank(monster, rank)
-        PoEMonsterRarity.applyHealthFromRank(monster, rank)
+        PoEMonsterRarity.applyHealthFromRankAndLevel(monster)
 
     end, 1)
 
