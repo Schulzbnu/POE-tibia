@@ -10,7 +10,9 @@ function ec.onSpawn(monster, position, startup, artificial)
         if not monster or not monster:isMonster() then
             return
         end
-
+        -- local rank = "Unique"
+        -- local level = 50
+        
         PoEMonsterRarity.setMonsterRank(monster, rank)
         PoEMonsterRarity.setMonsterLevel(monster, level)
 

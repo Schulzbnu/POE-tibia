@@ -5,10 +5,8 @@ ec.onLookInBattleList = function(self, creature, distance)
 
     if creature:isCreature() then
             if creature:isMonster() then
-                    local lvl = 0
-                    local rank = "Normal"
-                    if PoEMonsterLevels and PoEMonsterLevels.getMonsterLevel then
-                    lvl = PoEMonsterLevels.getMonsterLevel(creature) or 0
+                    if PoEMonsterRarity and PoEMonsterRarity.getMonsterLevel then
+                    lvl = PoEMonsterRarity.getMonsterLevel(creature) or 0
                     end
                     if PoEMonsterRarity and PoEMonsterRarity.getMonsterRank then
                     rank = PoEMonsterRarity.getMonsterRank(creature) or "Normal"

@@ -8,11 +8,8 @@ ec.onLook = function(self, thing, position, distance, description)
         
         if thing:isCreature() then
                 if thing:isMonster() then
-                        local lvl = 0
-                        local rank = "Normal"
-
-                        if PoEMonsterLevels and PoEMonsterLevels.getMonsterLevel then
-                        lvl = PoEMonsterLevels.getMonsterLevel(thing) or 0
+                        if PoEMonsterRarity and PoEMonsterRarity.getMonsterLevel then
+                        lvl = PoEMonsterRarity.getMonsterLevel(thing) or 0
                         end
 
                         if PoEMonsterRarity and PoEMonsterRarity.getMonsterRank then
