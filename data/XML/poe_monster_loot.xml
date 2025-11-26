@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<loot>
+    <!--
+        Estrutura:
+        <item itemId="ID" minLevel="1" maxLevel="100" chance="75">
+            <amount min="1" max="3" />
+            <chanceByRarity Normal="100" Magic="120" Rare="150" Unique="200" />
+            <amountByRarity Normal="100" Magic="120" Rare="150" Unique="200" />
+            <chanceByLevel>
+                <range minLevel="1" maxLevel="10" value="80" />
+                <range minLevel="11" maxLevel="50" value="120" />
+            </chanceByLevel>
+            <amountByLevel>
+                <range minLevel="1" maxLevel="10" value="100" />
+                <range minLevel="11" maxLevel="50" value="140" />
+            </amountByLevel>
+        </item>
+
+        Fórmula de chance: chanceFinal = chanceBase * multRaridade(chanceByRarity) * multLevel(chanceByLevel) * RATE_LOOT (clamp 0-100).
+        Fórmula de quantidade: quantidade = floor(rand(min..max) * multRaridade(amountByRarity) * multLevel(amountByLevel)), mínimo 1.
+        Multiplicadores são percentuais (100 = 1.0x, 120 = 1.2x). Faixa de nível não encontrada = 100%.
+    -->
+    <item itemId="2148" minLevel="1" maxLevel="999" chance="75">
+        <amount min="5" max="35" />
+        <chanceByRarity Normal="100" Magic="120" Rare="150" Unique="200" />
+        <amountByRarity Normal="100" Magic="130" Rare="160" Unique="200" />
+    </item>
+</loot>
