@@ -1,5 +1,11 @@
 local ec = EventCallback
 
+local COIN_VALUES = {
+    [ITEM_GOLD_COIN] = 1,
+    [ITEM_PLATINUM_COIN] = 100,
+    [ITEM_CRYSTAL_COIN] = 10000,
+}
+
 local function mergeStackableIntoContainer(container, item)
     local itemType = ItemType(item:getId())
 
@@ -79,6 +85,46 @@ local function collectPlayerContainers(root)
     end
 
     return containers
+end
+
+local function collectCoinValue(container)
+    local total = 0
+
+    for _, item in ipairs(container:getItems()) do
+        if item:isContainer() then
+            total = total + collectCoinValue(item)
+        else
+            local coinValue = COIN_VALUES[item:getId()]
+            if coinValue then
+                local count = 1
+                if item.getCount then
+                    count = item:getCount()
+                end
+
+                total = total + (coinValue * count)
+                item:remove()
+            end
+        end
+    end
+
+    return total
+end
+
+local function depositCorpseCoins(player, corpse)
+    if not player then
+        return 0
+    end
+
+    local totalValue = collectCoinValue(corpse)
+    if totalValue > 0 then
+        player:setBankBalance(player:getBankBalance() + totalValue)
+        player:sendTextMessage(
+            MESSAGE_STATUS_SMALL,
+            string.format("%d gold has been automatically added to your bank balance.", totalValue)
+        )
+    end
+
+    return totalValue
 end
 
 -- Adds a fully rolled loot item to the corpse (chance already resolved).
@@ -224,10 +270,12 @@ ec.onDropLoot = function(self, corpse)
             end
         end
 
-        local lootDescription = corpse:getContentDescription()
-        local lootText = ("Loot of %s: %s"):format(mType:getNameDescription(), lootDescription)
-
         if player then
+            depositCorpseCoins(player, corpse)
+
+            local lootDescription = corpse:getContentDescription()
+            local lootText = ("Loot of %s: %s"):format(mType:getNameDescription(), lootDescription)
+
             local party = player:getParty()
             if party then
                 party:broadcastPartyLoot(lootText)
