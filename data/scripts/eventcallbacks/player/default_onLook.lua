@@ -1,9 +1,29 @@
 local ec = EventCallback
 
-ec.onLook = function(self, thing, position, distance, description)
+ec.onLook = function(self, thing, position, distance, description)        
 	local description = "You see " .. thing:getDescription(distance)
         if thing:isItem() then                
                 description = string.format("%s\n%s", description, statusDescription)                
+        end
+        
+        if thing:isCreature() then
+                if thing:isMonster() then
+                        local lvl = 0
+                        local rank = "Normal"
+
+                        if PoEMonsterLevels and PoEMonsterLevels.getMonsterLevel then
+                        lvl = PoEMonsterLevels.getMonsterLevel(thing) or 0
+                        end
+
+                        if PoEMonsterRarity and PoEMonsterRarity.getMonsterRank then
+                        rank = PoEMonsterRarity.getMonsterRank(thing) or "Normal"
+                        end
+
+                        description = string.format(
+                        "%s\n[RARITY: %s] [LEVEL: %d]",
+                        description, rank, lvl
+                        )
+                end
         end
 
         if self:getGroup():getAccess() then
