@@ -349,6 +349,10 @@ function Loot.rollLoot(monster)
     return generated
 end
 
+function Loot.rollItemLevel(monsterLevel)
+    return rollItemLevel(monsterLevel)
+end
+
 function Loot.reloadFromXML(path)
     local entries = loadLootFromXML(path or LOOT_XML_PATH)
     if #entries > 0 then

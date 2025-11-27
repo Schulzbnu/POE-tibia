@@ -86,6 +86,24 @@ local function mergeStackableIntoContainer(container, item)
     return movedCount
 end
 
+local function rollPerItemLevel(lootItem, monster)
+    if not lootItem then
+        return nil
+    end
+
+    local baseLevel = lootItem.itemLevel
+
+    if PoEMonsterRarity and PoEMonsterRarity.getMonsterLevel then
+        baseLevel = baseLevel or PoEMonsterRarity.getMonsterLevel(monster)
+    end
+
+    if PoEMonsterLoot and PoEMonsterLoot.rollItemLevel then
+        return PoEMonsterLoot.rollItemLevel(baseLevel)
+    end
+
+    return baseLevel
+end
+
 local function collectPlayerContainers(root)
     local containers = {}
     local queue = { root }
@@ -189,7 +207,14 @@ local function addRolledLootItem(corpse, lootItem, monster)
             return false
         end
 
-        applyItemLevel(tmpItem, monster, lootItem)
+        local perItemLoot = lootItem
+        local perItemLevel = rollPerItemLevel(lootItem, monster)
+
+        if perItemLevel then
+            perItemLoot = { itemLevel = perItemLevel }
+        end
+
+        applyItemLevel(tmpItem, monster, perItemLoot)
 
         local ret = corpse:addItemEx(tmpItem)
         if ret ~= RETURNVALUE_NOERROR then
