@@ -373,7 +373,7 @@ local function calculateAmount(entry, rarity, monsterLevel)
     return amount
 end
 
-function Loot.rollItem(entry, monster)
+function Loot.rollItem(entry, monster, chanceScale)
     if type(entry) ~= "table" then
         return nil
     end
@@ -391,6 +391,10 @@ function Loot.rollItem(entry, monster)
     end
 
     local adjustedChance = calculateAdjustedChance(entry, monsterRarity, monsterLevel)
+    if chanceScale and chanceScale > 0 then
+        adjustedChance = adjustedChance / chanceScale
+    end
+
     if adjustedChance <= 0 or not shouldDrop(adjustedChance) then
         return nil
     end
@@ -407,10 +411,19 @@ function Loot.rollLoot(monster)
     end
 
     local generated = {}
+    local dropCountsByItemId = {}
+    -- Penalidade de chance aplicada apenas a múltiplos drops do mesmo item
+
     for _, entry in ipairs(Loot.LOOT_TABLE) do
-        local lootItem = Loot.rollItem(entry, monster)
+        local itemId = entry.itemId or entry.id
+        local previousDrops = (itemId and dropCountsByItemId[itemId]) or 0
+        local chanceScale = previousDrops > 0 and (previousDrops + 1) or nil
+        local lootItem = Loot.rollItem(entry, monster, chanceScale)
         if lootItem then
             table.insert(generated, lootItem)
+            if itemId then
+                dropCountsByItemId[itemId] = previousDrops + 1
+            end
         end
     end
 
