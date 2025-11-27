@@ -1,0 +1,113 @@
+AutolootContainerEntry < UIWidget
+  height: 36
+  layout:
+    type: horizontalBox
+    fit-children: true
+    fit-children-ignores-padding: true
+    cell-spacing: 6
+    padding-top: 4
+    padding-bottom: 4
+    padding-left: 8
+    padding-right: 8
+  Item
+    id: item
+    size: 32 32
+  Label
+    id: label
+    anchors.verticalCenter: parent.verticalCenter
+    color: #C0C0C0
+    text-auto-resize: true
+  UIButton
+    id: assignButton
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 8
+    text: Assign
+    @onClick: modules.game_autoloot_selector.AutolootSelector.assignFromButton(self)
+
+Window
+  id: main
+  !text: tr('Autoloot Container')
+  size: 420 360
+  color: #C0C0C0
+  anchors.centerIn: parent
+  padding: 8
+
+  Label
+    id: description
+    !text: tr('Choose which backpack will receive items from Autoloot (Unassigned).')
+    color: #C0C0C0
+    anchors.left: parent.left
+    anchors.right: parent.right
+    text-wrap: true
+
+  Panel
+    id: selectedContainer
+    size: 404 48
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: description.bottom
+    margin-top: 6
+    padding: 6
+    background-color: #ffffff11
+    image-source: /images/ui/2pixel_up_frame_borderimage
+    image-border: 4
+    layout:
+      type: horizontalBox
+      fit-children: true
+      fit-children-ignores-padding: true
+      cell-spacing: 8
+    Label
+      id: selectedLabel
+      anchors.verticalCenter: parent.verticalCenter
+      !text: tr('Current autoloot backpack: none')
+      color: #C0C0C0
+      text-auto-resize: true
+    Item
+      id: selectedItem
+      size: 32 32
+      anchors.verticalCenter: parent.verticalCenter
+
+  OptionCheckBoxMarked
+    id: fallbackCheckbox
+    anchors.left: parent.left
+    anchors.top: selectedContainer.bottom
+    margin-top: 8
+    !text: tr('Use main container as fallback')
+    @onCheckChange: modules.game_autoloot_selector.AutolootSelector.toggleFallback(self:isChecked())
+
+  Label
+    !text: tr('Open containers')
+    anchors.left: parent.left
+    anchors.top: fallbackCheckbox.bottom
+    margin-top: 8
+    color: #C0C0C0
+
+  ScrollablePanel
+    id: containerList
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    anchors.bottom: parent.bottom
+    margin-top: 4
+    padding: 2
+    vertical-scrollbar: scrollbar
+    layout:
+      type: verticalBox
+      fit-children: true
+      fit-children-ignores-padding: true
+      cell-spacing: 2
+    background-color: #ffffff11
+
+  VerticalScrollBar
+    id: scrollbar
+    anchors.top: containerList.top
+    anchors.bottom: containerList.bottom
+    anchors.right: containerList.right
+    pixels-scroll: true
+
+  QtButton
+    id: closeButton
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+    text: Close
+    @onClick: modules.game_autoloot_selector.AutolootSelector.hide()
