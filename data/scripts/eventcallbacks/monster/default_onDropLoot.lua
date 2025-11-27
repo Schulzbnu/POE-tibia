@@ -26,6 +26,29 @@ local function applyItemLevel(item, monster, lootItem)
     end
 end
 
+local function applyItemRarity(item, monster, lootItem)
+    if not (item and PoeItemMods and PoeItemMods.setItemMods and PoeItemMods.getItemType) then
+        return
+    end
+
+    local itemGroup = PoeItemMods.getItemType(item)
+    if not itemGroup then
+        return
+    end
+
+    local rarityKey = lootItem and lootItem.itemRarity
+
+    if not rarityKey and PoEMonsterLoot and PoEMonsterLoot.rollItemRarity then
+        local monsterLevel = monster and PoEMonsterRarity and PoEMonsterRarity.getMonsterLevel(monster)
+        local monsterRank = monster and PoEMonsterRarity and PoEMonsterRarity.getMonsterRank(monster)
+        rarityKey = PoEMonsterLoot.rollItemRarity(monsterLevel, monsterRank)
+    end
+
+    if rarityKey then
+        PoeItemMods.setItemMods(item, rarityKey, {})
+    end
+end
+
 local function mergeStackableIntoContainer(container, item)
     local itemType = ItemType(item:getId())
 
@@ -191,6 +214,7 @@ local function addRolledLootItem(corpse, lootItem, monster)
         end
 
         applyItemLevel(tmpItem, monster, lootItem)
+        applyItemRarity(tmpItem, monster, lootItem)
 
         local ret = corpse:addItemEx(tmpItem)
         if ret ~= RETURNVALUE_NOERROR then
@@ -215,6 +239,7 @@ local function addRolledLootItem(corpse, lootItem, monster)
         end
 
         applyItemLevel(tmpItem, monster, perItemLoot)
+        applyItemRarity(tmpItem, monster, perItemLoot)
 
         local ret = corpse:addItemEx(tmpItem)
         if ret ~= RETURNVALUE_NOERROR then
