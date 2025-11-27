@@ -129,7 +129,7 @@ end
 
 -- Adds a fully rolled loot item to the corpse (chance already resolved).
 -- Uses stack sizes when possible and falls back to one-by-one creation for non-stackables.
-local function addRolledLootItem(corpse, lootItem)
+local function addRolledLootItem(corpse, lootItem, monster)
     if not lootItem then
         return false
     end
@@ -145,6 +145,24 @@ local function addRolledLootItem(corpse, lootItem)
     end
 
     local count = math.max(1, lootItem.count or 1)
+
+    local function applyItemLevelTo(item)
+        if not (PoeItemMods and PoeItemMods.setItemLevel and PoeItemMods.getItemType) then
+            return
+        end
+
+        if PoeItemMods.getItemType(item) then
+            local itemLevel = lootItem.itemLevel
+
+            if not itemLevel and monster and PoEMonsterRarity and PoEMonsterRarity.getMonsterLevel then
+                itemLevel = PoEMonsterRarity.getMonsterLevel(monster)
+            end
+
+            if itemLevel then
+                PoeItemMods.setItemLevel(item, itemLevel)
+            end
+        end
+    end
 
     if itemType:isStackable() then
         local tmpItem = Game.createItem(itemId, count)
@@ -166,6 +184,8 @@ local function addRolledLootItem(corpse, lootItem)
         if not tmpItem then
             return false
         end
+
+        applyItemLevelTo(tmpItem)
 
         local ret = corpse:addItemEx(tmpItem)
         if ret ~= RETURNVALUE_NOERROR then
@@ -263,7 +283,7 @@ ec.onDropLoot = function(self, corpse)
             end
         else
             for _, lootItem in ipairs(lootItems) do
-                local created = addRolledLootItem(corpse, lootItem)
+                local created = addRolledLootItem(corpse, lootItem, self)
                 if not created then
                     print('[Warning] DropLoot:', 'Could not add loot item to corpse.')
                 end

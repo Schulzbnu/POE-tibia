@@ -179,6 +179,23 @@ local function getLootLevel(monster)
     return 1
 end
 
+local function rollItemLevel(monsterLevel)
+    monsterLevel = math.max(1, math.floor(monsterLevel or 1))
+
+    -- Peso enviesado para níveis mais altos: expoente grande reduz drasticamente a probabilidade de sair próximo ao limite.
+    -- (ajustado para ~1/10 da chance anterior de dropar item level 90+ em um monstro nível 100)
+    local biasExponent = 6.5
+    local roll = math.random()
+
+    -- Garantir que o roll nunca seja exatamente 0 para evitar ficar preso no nível 1.
+    if roll <= 0 then
+        roll = 0.0001
+    end
+
+    local scaled = roll ^ biasExponent
+    return math.max(1, math.min(monsterLevel, math.floor((monsterLevel - 1) * scaled + 1)))
+end
+
 local function getLootRarity(monster)
     if not monster or not Rarity or not Rarity.getMonsterRank then
         return nil
@@ -312,7 +329,8 @@ function Loot.rollItem(entry, monster)
     end
 
     local amount = calculateAmount(entry, monsterRarity, monsterLevel)
-    return { itemId = itemId, id = itemId, count = amount }
+    local itemLevel = rollItemLevel(monsterLevel)
+    return { itemId = itemId, id = itemId, count = amount, itemLevel = itemLevel }
 end
 
 function Loot.rollLoot(monster)
