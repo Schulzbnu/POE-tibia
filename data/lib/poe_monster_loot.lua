@@ -417,13 +417,23 @@ function Loot.rollLoot(monster)
     for _, entry in ipairs(Loot.LOOT_TABLE) do
         local itemId = entry.itemId or entry.id
         local previousDrops = (itemId and dropCountsByItemId[itemId]) or 0
-        local chanceScale = previousDrops > 0 and (previousDrops + 1) or nil
-        local lootItem = Loot.rollItem(entry, monster, chanceScale)
-        if lootItem then
-            table.insert(generated, lootItem)
-            if itemId then
-                dropCountsByItemId[itemId] = previousDrops + 1
+
+        while true do
+            local chanceScale = (itemId and previousDrops > 0) and (previousDrops + 1) or nil
+            local lootItem = Loot.rollItem(entry, monster, chanceScale)
+
+            if not lootItem then
+                break
             end
+
+            table.insert(generated, lootItem)
+
+            if not itemId then
+                break
+            end
+
+            previousDrops = previousDrops + 1
+            dropCountsByItemId[itemId] = previousDrops
         end
     end
 
