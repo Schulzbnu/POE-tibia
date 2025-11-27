@@ -1,11 +1,13 @@
 -- data/lib/poe_monster_loot.lua
 -- Biblioteca de loot baseada em level e raridade dos monstros
 -- A loot table agora é carregada a partir de um XML em data/XML/poe_monster_loot.xml.
--- Consulte o arquivo para a estrutura de configuração (amount/chance por level e raridade).
+-- Consulte o arquivo para a estrutura de configuração (chance por level e raridade).
 --
--- Cálculo rápido de chance e quantidade:
---   * Chance final = chanceBase * multRaridade(chanceByRarity) * multLevel(chanceByLevel) * RATE_LOOT (clamped 0-100).
---   * Quantidade   = floor(rand(amount.min-max) * multRaridade(amountByRarity) * multLevel(amountByLevel)), mínimo 1.
+-- Cálculo rápido de chance:
+--   * Chance final = chanceBase * multRaridade(chanceByRarity) * multLevel(chanceByLevel) * RATE_LOOT (sempre
+--     limitada entre 0-100, garantindo que não ultrapasse 100%).
+--   * Quantidade   = sempre 1. Para múltiplas unidades do mesmo item, o sistema rerrola a chance
+--     com penalidade progressiva (2º item 2x mais raro, 3º item 3x mais raro, etc.).
 -- Valores de multiplicadores são percentuais (ex.: 120 = 1.2x). Ausência = 100% (1.0x).
 
 PoEMonsterLoot = PoEMonsterLoot or {}
@@ -18,11 +20,9 @@ local Rarity = PoEMonsterRarity
 --  * itemId             -> ID do item a ser dropado
 --  * minLevel / maxLevel -> Level mínimo/máximo do monstro para habilitar o drop
 --  * chance             -> Chance base em porcentagem (0-100)
---  * amount             -> { min = X, max = Y } define o range de quantidade
 --  * chanceByRarity     -> multiplicadores de chance por raridade (em %)
---  * amountByRarity     -> multiplicadores de quantidade por raridade (em %)
 --  * chanceByLevel      -> multiplicadores de chance por level (em %)
---  * amountByLevel      -> multiplicadores de quantidade por level (em %)
+-- Quantidade fixa em 1; múltiplas cópias nascem de rerolls sucessivos com penalidade progressiva.
 Loot.LOOT_TABLE = Loot.LOOT_TABLE or {}
 
 local LOOT_XML_PATH = "data/XML/poe_monster_loot.xml"
@@ -79,33 +79,14 @@ local function parseItemNode(itemAttrs, itemBody)
         chance = tonumber(attrs.chance or attrs.dropChance)
     }
 
-    local amountTag = itemBody:match("<amount%s*(.-)%s*/>%s*")
-    if amountTag then
-        local amountAttrs = parseAttributes(amountTag)
-        entry.amount = {
-            min = tonumber(amountAttrs.min or amountAttrs[1]),
-            max = tonumber(amountAttrs.max or amountAttrs[2])
-        }
-    end
-
     local chanceByRarityTag = itemBody:match("<chanceByRarity%s*(.-)%s*/>%s*")
     if chanceByRarityTag then
         entry.chanceByRarity = parseRarityMap(parseAttributes(chanceByRarityTag))
     end
 
-    local amountByRarityTag = itemBody:match("<amountByRarity%s*(.-)%s*/>%s*")
-    if amountByRarityTag then
-        entry.amountByRarity = parseRarityMap(parseAttributes(amountByRarityTag))
-    end
-
     local chanceByLevelBody = itemBody:match("<chanceByLevel>(.-)</chanceByLevel>")
     if chanceByLevelBody then
         entry.chanceByLevel = parseLevelRanges(chanceByLevelBody)
-    end
-
-    local amountByLevelBody = itemBody:match("<amountByLevel>(.-)</amountByLevel>")
-    if amountByLevelBody then
-        entry.amountByLevel = parseLevelRanges(amountByLevelBody)
     end
 
     if entry.itemId then
@@ -146,25 +127,6 @@ local function clampChance(value)
         return 100
     end
     return value
-end
-
-local function normalizeAmountRange(amount)
-    if type(amount) ~= "table" then
-        return { min = 1, max = 1 }
-    end
-
-    local minAmount = tonumber(amount.min or amount[1] or 1) or 1
-    local maxAmount = tonumber(amount.max or amount[2] or minAmount) or minAmount
-
-    if minAmount < 1 then
-        minAmount = 1
-    end
-
-    if maxAmount < minAmount then
-        maxAmount = minAmount
-    end
-
-    return { min = minAmount, max = maxAmount }
 end
 
 local function getLootLevel(monster)
@@ -292,20 +254,6 @@ local function getChanceMultiplier(entry, rarity)
     return (tonumber(value) or 100) / 100
 end
 
-local function getAmountMultiplier(entry, rarity)
-    local multipliers = entry.amountByRarity
-    if type(multipliers) ~= "table" or not rarity then
-        return 1.0
-    end
-
-    local value = multipliers[rarity]
-    if not value then
-        return 1.0
-    end
-
-    return (tonumber(value) or 100) / 100
-end
-
 local function getLevelMultiplier(levelConfig, monsterLevel)
     if type(levelConfig) ~= "table" then
         return 1.0
@@ -359,18 +307,9 @@ local function calculateAdjustedChance(entry, rarity, monsterLevel)
     return clampChance(baseChance * rarityMultiplier * levelMultiplier * rateLoot)
 end
 
-local function calculateAmount(entry, rarity, monsterLevel)
-    local amountRange = normalizeAmountRange(entry.amount or entry.count or entry.countRange)
-    local amount = math.random(amountRange.min, amountRange.max)
-    local rarityMultiplier = getAmountMultiplier(entry, rarity)
-    local levelMultiplier = getLevelMultiplier(entry.amountByLevel, monsterLevel)
-    amount = math.floor(amount * rarityMultiplier * levelMultiplier)
-
-    if amount < 1 then
-        amount = 1
-    end
-
-    return amount
+-- Quantidade fixa: múltiplos itens do mesmo tipo são conseguidos via rerolls sucessivos.
+local function calculateAmount()
+    return 1
 end
 
 function Loot.rollItem(entry, monster, chanceScale)
@@ -399,7 +338,7 @@ function Loot.rollItem(entry, monster, chanceScale)
         return nil
     end
 
-    local amount = calculateAmount(entry, monsterRarity, monsterLevel)
+    local amount = calculateAmount()
     local itemLevel = rollItemLevel(monsterLevel)
     local itemRarity = rollItemRarity(monsterLevel, monsterRarity)
     return { itemId = itemId, id = itemId, count = amount, itemLevel = itemLevel, itemRarity = itemRarity }
