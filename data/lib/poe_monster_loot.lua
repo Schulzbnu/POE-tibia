@@ -123,8 +123,6 @@ end
 local function clampChance(value)
     if value < 0 then
         return 0
-    elseif value > 100 then
-        return 100
     end
     return value
 end
@@ -279,16 +277,22 @@ local function getLevelMultiplier(levelConfig, monsterLevel)
     return 1.0
 end
 
-local function shouldDrop(chancePercent)
+local function calculateDropCount(chancePercent)
     chancePercent = clampChance(chancePercent)
 
-    if chancePercent >= 100 then
-        return true
+    local guaranteedDrops = math.floor(chancePercent / 100)
+    local remainder = chancePercent - (guaranteedDrops * 100)
+
+    local dropCount = guaranteedDrops
+    if remainder > 0 then
+        -- precisão de duas casas decimais
+        local roll = math.random(0, 10000) / 100
+        if roll <= remainder then
+            dropCount = dropCount + 1
+        end
     end
 
-    -- precisão de duas casas decimais
-    local roll = math.random(0, 10000) / 100
-    return roll <= chancePercent
+    return dropCount
 end
 
 local function calculateAdjustedChance(entry, rarity, monsterLevel)
@@ -312,36 +316,51 @@ local function calculateAmount()
     return 1
 end
 
+local function buildLootResult(entry, monster)
+    local itemId = entry.itemId or entry.id
+    local monsterLevel = getLootLevel(monster)
+    local itemLevel = rollItemLevel(monsterLevel)
+    local itemRarity = rollItemRarity(monsterLevel, getLootRarity(monster))
+
+    return {
+        itemId = itemId,
+        id = itemId,
+        count = calculateAmount(),
+        itemLevel = itemLevel,
+        itemRarity = itemRarity
+    }
+end
+
 function Loot.rollItem(entry, monster, chanceScale)
     if type(entry) ~= "table" then
         return nil
     end
 
-    local itemId = entry.itemId or entry.id
-    if not itemId then
+    if not (entry.itemId or entry.id) then
         return nil
     end
 
     local monsterLevel = getLootLevel(monster)
-    local monsterRarity = getLootRarity(monster)
-
     if not isLevelAllowed(entry, monsterLevel) then
         return nil
     end
 
-    local adjustedChance = calculateAdjustedChance(entry, monsterRarity, monsterLevel)
+    local adjustedChance = calculateAdjustedChance(entry, getLootRarity(monster), monsterLevel)
     if chanceScale and chanceScale > 0 then
         adjustedChance = adjustedChance / chanceScale
     end
 
-    if adjustedChance <= 0 or not shouldDrop(adjustedChance) then
+    local dropCount = calculateDropCount(adjustedChance)
+    if dropCount <= 0 then
         return nil
     end
 
-    local amount = calculateAmount()
-    local itemLevel = rollItemLevel(monsterLevel)
-    local itemRarity = rollItemRarity(monsterLevel, monsterRarity)
-    return { itemId = itemId, id = itemId, count = amount, itemLevel = itemLevel, itemRarity = itemRarity }
+    local lootResults = {}
+    for _ = 1, dropCount do
+        table.insert(lootResults, buildLootResult(entry, monster))
+    end
+
+    return lootResults
 end
 
 function Loot.rollLoot(monster)
@@ -359,20 +378,24 @@ function Loot.rollLoot(monster)
 
         while true do
             local chanceScale = (itemId and previousDrops > 0) and (previousDrops + 1) or nil
-            local lootItem = Loot.rollItem(entry, monster, chanceScale)
+            local lootItems = Loot.rollItem(entry, monster, chanceScale)
 
-            if not lootItem then
+            if not lootItems then
                 break
             end
 
-            table.insert(generated, lootItem)
+            for _, lootItem in ipairs(lootItems) do
+                table.insert(generated, lootItem)
+
+                if itemId then
+                    previousDrops = previousDrops + 1
+                    dropCountsByItemId[itemId] = previousDrops
+                end
+            end
 
             if not itemId then
                 break
             end
-
-            previousDrops = previousDrops + 1
-            dropCountsByItemId[itemId] = previousDrops
         end
     end
 
