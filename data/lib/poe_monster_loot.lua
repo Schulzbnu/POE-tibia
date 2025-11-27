@@ -182,18 +182,85 @@ end
 local function rollItemLevel(monsterLevel)
     monsterLevel = math.max(1, math.floor(monsterLevel or 1))
 
-    -- Peso enviesado para níveis mais altos: expoente grande reduz drasticamente a probabilidade de sair próximo ao limite.
-    -- (ajustado para ~1/10 da chance anterior de dropar item level 90+ em um monstro nível 100)
-    local biasExponent = 6.5
-    local roll = math.random()
+    -- Média de múltiplos rolls cria uma distribuição triangular, favorecendo
+    -- valores centrais sem abrir mão da raridade nos extremos altos.
+    -- Mantém baixa a chance de alcançar o item level máximo, mas reduz
+    -- drasticamente a incidência de nível 1.
+    local roll = (math.random() + math.random() + math.random()) / 3
+    return math.max(1, math.min(monsterLevel, math.floor((monsterLevel - 1) * roll + 1)))
+end
 
-    -- Garantir que o roll nunca seja exatamente 0 para evitar ficar preso no nível 1.
-    if roll <= 0 then
-        roll = 0.0001
+local function buildRarityWeights(monsterLevel, monsterRank)
+    local maxLevel = (Rarity and Rarity.MAX_LEVEL) or 100
+    local clampedLevel = math.max(1, math.min(math.floor(monsterLevel or 1), maxLevel))
+    local levelFactor = (clampedLevel - 1) / math.max(1, (maxLevel - 1))
+
+    -- Chances baseadas no comando /rollpoe
+    local weights = {
+        normal = 60,
+        magic = 25,
+        rare = 12,
+        unique = 3,
+    }
+
+    -- Conforme o level do monstro sobe, migramos parte do peso de normal
+    -- para raridades maiores, mantendo unique ainda raro.
+    local bonusMagic = 20 * levelFactor
+    local bonusRare = 12 * levelFactor
+    local bonusUnique = 5 * levelFactor
+
+    weights.magic = weights.magic + bonusMagic
+    weights.rare = weights.rare + bonusRare
+    weights.unique = weights.unique + bonusUnique
+    weights.normal = math.max(5, weights.normal - (bonusMagic + bonusRare + bonusUnique))
+
+    -- Raridades de monstros aumentam a chance de itens mais raros.
+    local rankMultiplier = {
+        [Rarity and Rarity.RANK.MAGIC or "Magic"] = 1.15,
+        [Rarity and Rarity.RANK.RARE or "Rare"] = 1.35,
+        [Rarity and Rarity.RANK.UNIQUE or "Unique"] = 1.6,
+        [Rarity and Rarity.RANK.NORMAL or "Normal"] = 1.0,
+    }
+
+    local rarityBoost = rankMultiplier[monsterRank] or 1.0
+    weights.magic = weights.magic * rarityBoost
+    weights.rare = weights.rare * (1 + (rarityBoost - 1) * 0.85)
+    weights.unique = weights.unique * (1 + (rarityBoost - 1) * 1.1)
+    weights.normal = weights.normal / rarityBoost
+
+    return weights
+end
+
+local function rollItemRarity(monsterLevel, monsterRank)
+    local weights = buildRarityWeights(monsterLevel, monsterRank)
+    local totalWeight = 0
+    for _, value in pairs(weights) do
+        totalWeight = totalWeight + (value or 0)
     end
 
-    local scaled = roll ^ biasExponent
-    return math.max(1, math.min(monsterLevel, math.floor((monsterLevel - 1) * scaled + 1)))
+    if totalWeight <= 0 then
+        return "normal"
+    end
+
+    local roll = math.random() * totalWeight
+    local accumulator = 0
+
+    accumulator = accumulator + weights.normal
+    if roll <= accumulator then
+        return "normal"
+    end
+
+    accumulator = accumulator + weights.magic
+    if roll <= accumulator then
+        return "magic"
+    end
+
+    accumulator = accumulator + weights.rare
+    if roll <= accumulator then
+        return "rare"
+    end
+
+    return "unique"
 end
 
 local function getLootRarity(monster)
@@ -330,7 +397,8 @@ function Loot.rollItem(entry, monster)
 
     local amount = calculateAmount(entry, monsterRarity, monsterLevel)
     local itemLevel = rollItemLevel(monsterLevel)
-    return { itemId = itemId, id = itemId, count = amount, itemLevel = itemLevel }
+    local itemRarity = rollItemRarity(monsterLevel, monsterRarity)
+    return { itemId = itemId, id = itemId, count = amount, itemLevel = itemLevel, itemRarity = itemRarity }
 end
 
 function Loot.rollLoot(monster)
@@ -351,6 +419,10 @@ end
 
 function Loot.rollItemLevel(monsterLevel)
     return rollItemLevel(monsterLevel)
+end
+
+function Loot.rollItemRarity(monsterLevel, monsterRank)
+    return rollItemRarity(monsterLevel, monsterRank)
 end
 
 function Loot.reloadFromXML(path)

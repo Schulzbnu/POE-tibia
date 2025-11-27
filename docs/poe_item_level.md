@@ -7,8 +7,13 @@ Este projeto mantém um sistema de "item level" para equipamentos inspirados em 
 - Os valores são sempre normalizados para o intervalo de 1 até o nível máximo configurado para monstros (padrão 100). Isso evita níveis inválidos e garante consistência no cálculo de tiers.
 
 ## Aplicação do item level
-- Durante a criação de loot em monstros, cada equipamento elegível recebe um item level aleatório entre 1 e o nível do monstro, com viés controlado para valores altos. Quanto mais forte o monstro, maior a chance de cair um item com nível próximo ao dele, mas com probabilidade bem reduzida para evitar números muito altos com frequência. O sorteio usa a fórmula `scaled = random() ^ 6.5` e converte o resultado para um número inteiro entre 1 e o level do monstro.
+- Durante a criação de loot em monstros, cada equipamento elegível recebe um item level aleatório entre 1 e o nível do monstro, agora usando a média de três rolagens aleatórias. Isso cria uma distribuição triangular que favorece valores médios, reduz a incidência de itens nível 1 e ainda mantém raros os valores no teto do level do monstro.
 - Ao usar o comando `/rollpoe`, novos itens criados recebem automaticamente o nível do jogador que executou o comando. Isso permite testar ou gerar itens proporcionais ao progresso do personagem.
+
+## Raridade dos itens no loot
+- Itens dropados já saem com raridade definida (`normal`, `magic`, `rare` ou `unique`).
+- As chances seguem os mesmos pesos do `/rollpoe` (60/25/12/3), mas deslocam parte do peso de `normal` para raridades maiores conforme o level do monstro aumenta e de acordo com a raridade do próprio monstro.
+- A raridade fica salva nos atributos customizados, garantindo que a descrição do item exiba a categoria antes mesmo de rolar mods.
 
 ## Seleção de tiers de mods
 - Cada mod possui uma lista de tiers ordenados (tier 1 = melhor). O item level define quantos tiers de cima para baixo estão desbloqueados.
@@ -25,4 +30,4 @@ Este projeto mantém um sistema de "item level" para equipamentos inspirados em 
 3. Quanto maior o item level, maior a chance de tiers superiores aparecerem nos mods rolados.
 
 ### Exemplo de probabilidade para nível 100
-- Para um monstro nível 100, a chance de dropar um item nível 91 ou superior agora é `1 - (90/99)^(1/6.5) ≈ 1,46%`. Quanto mais alto o nível desejado em relação ao nível do monstro, menor a probabilidade; o expoente `6.5` deixa o sorteio muito mais conservador, reduzindo em cerca de 90% as chances de sair um item level acima de 90 em comparação ao ajuste anterior.
+- Para um monstro nível 100, a média das três rolagens mantém a maior concentração de níveis próximos de 50; atingir 90+ continua raro por conta da distribuição triangular, mas com bem menos incidência de itens nível 1 em comparação ao viés exponencial anterior.
