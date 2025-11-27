@@ -25,6 +25,10 @@ function PoeItemMods.setItemLevel(item, level)
     end
 
     item:setCustomAttribute(PoeItemMods.ITEM_LEVEL_KEY, clampItemLevel(level))
+
+    -- Reaplica a descrição para expor o item level no tooltip, mesmo sem mods definidos.
+    local rarity, mods = PoeItemMods.getItemMods(item)
+    PoeItemMods.applyItemDescription(item, rarity, mods)
 end
 
 function PoeItemMods.getItemLevel(item)
