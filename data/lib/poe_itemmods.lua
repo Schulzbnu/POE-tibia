@@ -20,7 +20,7 @@ local function clampItemLevel(level)
 end
 
 function PoeItemMods.setItemLevel(item, level)
-    if not item then
+     if not item or type(item) ~= "userdata" or not item.setCustomAttribute then
         return
     end
 
@@ -32,7 +32,7 @@ function PoeItemMods.setItemLevel(item, level)
 end
 
 function PoeItemMods.getItemLevel(item)
-    if not item then
+    if not item or type(item) ~= "userdata" or not item.getCustomAttribute then
         return 1
     end
 
@@ -92,7 +92,7 @@ PoeItemMods.ITEM_TYPES = {
 -- Helper: mapeia itemId para tipo (você ajusta depois)
 -- Aqui você pode só mapear por slot via script, mas deixo hook para itemId se quiser
 function PoeItemMods.getItemType(item)
-    if not item then
+    if not item or type(item) ~= "userdata" or not item.getId then
         return nil
     end
 

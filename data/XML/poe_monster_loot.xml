@@ -10,12 +10,35 @@
             </chanceByLevel>
         </item>
 
-        Fórmula de chance: chanceFinal = chanceBase * multRaridade(chanceByRarity) * multLevel(chanceByLevel) * RATE_LOOT
-        (sempre limitada entre 0-100). Se multiplicadores excederem 100%, o drop é garantido, mas nunca passa disso.
-        Quantidade é sempre 1; múltiplas unidades exigem rerolls do mesmo item com penalidades progressivas (2x, 3x, ... mais raro).
-        Multiplicadores são percentuais (100 = 1.0x, 120 = 1.2x). Faixa de nível não encontrada = 100%.
     -->
     <item itemId="2148" minLevel="1" maxLevel="999" chance="75">
-        <chanceByRarity Normal="100" Magic="120" Rare="150" Unique="200" />
+        <chanceByRarity Normal="100" Magic="220" Rare="350" Unique="500" />
+            <chanceByLevel>
+                <range minLevel="1" maxLevel="10" value="80" />
+                <range minLevel="11" maxLevel="20" value="220" />
+                <range minLevel="21" maxLevel="30" value="340" />
+                <range minLevel="31" maxLevel="40" value="460" />
+                <range minLevel="41" maxLevel="50" value="580" />
+                <range minLevel="51" maxLevel="60" value="700" />
+                <range minLevel="61" maxLevel="70" value="820" />
+                <range minLevel="71" maxLevel="80" value="940" />
+                <range minLevel="81" maxLevel="90" value="1060" />
+                <range minLevel="91" maxLevel="100" value="1300" />
+            </chanceByLevel>
+    </item>
+        <item itemId="2383" minLevel="1" maxLevel="999" chance="0.1">
+        <chanceByRarity Normal="100" Magic="220" Rare="350" Unique="500" />
+            <chanceByLevel>
+                <range minLevel="1" maxLevel="10" value="80" />
+                <range minLevel="11" maxLevel="20" value="220" />
+                <range minLevel="21" maxLevel="30" value="340" />
+                <range minLevel="31" maxLevel="40" value="460" />
+                <range minLevel="41" maxLevel="50" value="580" />
+                <range minLevel="51" maxLevel="60" value="700" />
+                <range minLevel="61" maxLevel="70" value="820" />
+                <range minLevel="71" maxLevel="80" value="940" />
+                <range minLevel="81" maxLevel="90" value="1060" />
+                <range minLevel="91" maxLevel="100" value="1300" />
+            </chanceByLevel>
     </item>
 </loot>
