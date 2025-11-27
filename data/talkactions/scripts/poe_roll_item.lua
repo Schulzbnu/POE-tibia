@@ -20,6 +20,7 @@ end
 local function rollModsForItem(item, itemGroup)
     local rarityKey = rollRarity()
     local rarity = PoeItemMods.RARITIES[rarityKey]
+    local itemLevel = PoeItemMods.getItemLevel(item)
 
     if not rarity or rarity.maxMods == 0 or not PoeItemMods.MOD_POOLS[itemGroup] then
         PoeItemMods.clearItemMods(item)
@@ -44,20 +45,22 @@ local function rollModsForItem(item, itemGroup)
         local index = math.random(#available)
         local mod = available[index]
 
-        local tier = mod.tiers[math.random(#mod.tiers)]
-        local value = math.random(tier.min, tier.max)
+        local tier = PoeItemMods.rollTierForLevel(mod.tiers, itemLevel)
+        local value = tier and math.random(tier.min, tier.max)
 
-        table.insert(rolled, {
-            id = mod.id,
-            tier = tier.tier,
-            value = value,
-            text = string.format(mod.text, value),
-        })
+        if tier and value then
+            table.insert(rolled, {
+                id = mod.id,
+                tier = tier.tier,
+                value = value,
+                text = string.format(mod.text, value),
+            })
+        end
 
         table.remove(available, index)
     end
 
-    -- guarda nos custom attributes em formato compactado
+    -- guarda nos custom attributes em formato compactado e re-renderiza a descrição
     local modsToStore = {}
     for _, m in ipairs(rolled) do
         table.insert(modsToStore, {
@@ -67,14 +70,6 @@ local function rollModsForItem(item, itemGroup)
         })
     end
     PoeItemMods.setItemMods(item, rarityKey, modsToStore)
-
-    -- Atualiza descrição do item
-    local descLines = {}
-    table.insert(descLines, rarity.name .. " item")
-    for _, m in ipairs(rolled) do
-        table.insert(descLines, m.text)
-    end
-    item:setAttribute(ITEM_ATTRIBUTE_DESCRIPTION, table.concat(descLines, "\n"))
 
     return rarityKey, rolled
 end
@@ -89,6 +84,10 @@ local function createRolledItem(player, baseItemId)
     local group = PoeItemMods.getItemType(newItem)
     if not group then
         return nil, "Esse item (ID " .. baseItemId .. ") não pode receber mods PoE."
+    end
+
+    if player then
+        PoeItemMods.setItemLevel(newItem, player:getLevel())
     end
 
     local rarityKey, mods = rollModsForItem(newItem, group)

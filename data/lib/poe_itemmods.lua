@@ -1,6 +1,44 @@
 -- data/lib/poe_itemmods.lua
 
 PoeItemMods = PoeItemMods or {}
+PoeItemMods.ITEM_LEVEL_KEY = "poeItemLevel"
+PoeItemMods.MOD_INDEX = {}
+
+local function clampItemLevel(level)
+    local maxLevel = (PoEMonsterRarity and PoEMonsterRarity.MAX_LEVEL) or 100
+    local normalized = tonumber(level) or 1
+
+    if normalized < 1 then
+        normalized = 1
+    end
+
+    if normalized > maxLevel then
+        normalized = maxLevel
+    end
+
+    return math.floor(normalized)
+end
+
+function PoeItemMods.setItemLevel(item, level)
+    if not item then
+        return
+    end
+
+    item:setCustomAttribute(PoeItemMods.ITEM_LEVEL_KEY, clampItemLevel(level))
+end
+
+function PoeItemMods.getItemLevel(item)
+    if not item then
+        return 1
+    end
+
+    local stored = item:getCustomAttribute(PoeItemMods.ITEM_LEVEL_KEY)
+    if not stored then
+        return 1
+    end
+
+    return clampItemLevel(stored)
+end
 
 -- Slots que vamos considerar para somar os atributos
 PoeItemMods.EQUIP_SLOTS = {
@@ -89,6 +127,42 @@ function PoeItemMods.getItemType(item)
     end
     -- Se não bateu em nada, não recebe mods PoE
     return nil
+end
+
+local function getTierPoolForLevel(tiers, itemLevel)
+    if type(tiers) ~= "table" or #tiers == 0 then
+        return {}
+    end
+
+    local sorted = {}
+    for index, tier in ipairs(tiers) do
+        sorted[index] = tier
+    end
+
+    table.sort(sorted, function(a, b)
+        return (a.tier or 999) < (b.tier or 999)
+    end)
+
+    local maxLevel = (PoEMonsterRarity and PoEMonsterRarity.MAX_LEVEL) or 100
+    local normalized = clampItemLevel(itemLevel) / maxLevel
+    local unlockedCount = math.max(1, math.ceil(normalized * #sorted))
+    local startIndex = math.max(1, #sorted - unlockedCount + 1)
+
+    local pool = {}
+    for index = startIndex, #sorted do
+        table.insert(pool, sorted[index])
+    end
+
+    return pool
+end
+
+function PoeItemMods.rollTierForLevel(tiers, itemLevel)
+    local pool = getTierPoolForLevel(tiers, itemLevel)
+    if #pool == 0 then
+        return nil
+    end
+
+    return pool[math.random(#pool)]
 end
 
 
@@ -272,6 +346,82 @@ PoeItemMods.MOD_POOLS = {
     },
 }
 
+for poolName, pool in pairs(PoeItemMods.MOD_POOLS) do
+    for _, mod in ipairs(pool) do
+        PoeItemMods.MOD_INDEX[mod.id] = mod
+    end
+end
+
+local function resolveModText(modEntry, item)
+    if not modEntry then
+        return nil
+    end
+
+    if modEntry.text then
+        return modEntry.text
+    end
+
+    local definition = PoeItemMods.MOD_INDEX[modEntry.id]
+    if not definition or not definition.text or not modEntry.value then
+        return nil
+    end
+
+    return string.format(definition.text, modEntry.value)
+end
+
+local function buildBaseDescription(item)
+    local itemType = item and ItemType(item:getId())
+    if not itemType then
+        return ""
+    end
+
+    return itemType:getDescription() or ""
+end
+
+function PoeItemMods.buildDescription(item, rarityKey, mods)
+    if not item then
+        return ""
+    end
+
+    local descLines = {}
+    local rarity = PoeItemMods.RARITIES[rarityKey]
+    local rarityName = rarity and rarity.name or nil
+
+    if rarityName then
+        table.insert(descLines, string.format("%s item", rarityName))
+    end
+
+    table.insert(descLines, string.format("Item Level: %d", PoeItemMods.getItemLevel(item)))
+
+    if mods then
+        for _, mod in ipairs(mods) do
+            local modText = resolveModText(mod, item)
+            if modText then
+                table.insert(descLines, modText)
+            end
+        end
+    end
+
+    local baseDescription = buildBaseDescription(item)
+    if baseDescription ~= "" then
+        if #descLines > 0 then
+            table.insert(descLines, "")
+        end
+        table.insert(descLines, baseDescription)
+    end
+
+    return table.concat(descLines, "\n")
+end
+
+function PoeItemMods.applyItemDescription(item, rarityKey, mods)
+    if not item then
+        return
+    end
+
+    local description = PoeItemMods.buildDescription(item, rarityKey, mods)
+    item:setAttribute(ITEM_ATTRIBUTE_DESCRIPTION, description)
+end
+
 
 -- ========= Helpers de encode/decode em customAttribute "poeMods" ==========
 
@@ -314,8 +464,10 @@ function PoeItemMods.setItemMods(item, rarityKey, mods)
     if not item then
         return
     end
+    mods = mods or {}
     item:setCustomAttribute("poeRarity", rarityKey)
     item:setCustomAttribute("poeMods", PoeItemMods.encodeMods(mods))
+    PoeItemMods.applyItemDescription(item, rarityKey, mods)
 end
 
 function PoeItemMods.getItemMods(item)
