@@ -6,6 +6,26 @@ local COIN_VALUES = {
     [ITEM_CRYSTAL_COIN] = 10000,
 }
 
+local function applyItemLevel(item, monster, lootItem)
+    if not (item and PoeItemMods and PoeItemMods.setItemLevel and PoeItemMods.getItemType) then
+        return
+    end
+
+    if not PoeItemMods.getItemType(item) then
+        return
+    end
+
+    local itemLevel = lootItem and lootItem.itemLevel
+
+    if not itemLevel and monster and PoEMonsterRarity and PoEMonsterRarity.getMonsterLevel then
+        itemLevel = PoEMonsterRarity.getMonsterLevel(monster)
+    end
+
+    if itemLevel then
+        PoeItemMods.setItemLevel(item, itemLevel)
+    end
+end
+
 local function mergeStackableIntoContainer(container, item)
     local itemType = ItemType(item:getId())
 
@@ -146,29 +166,13 @@ local function addRolledLootItem(corpse, lootItem, monster)
 
     local count = math.max(1, lootItem.count or 1)
 
-    local function applyItemLevelTo(item)
-        if not (PoeItemMods and PoeItemMods.setItemLevel and PoeItemMods.getItemType) then
-            return
-        end
-
-        if PoeItemMods.getItemType(item) then
-            local itemLevel = lootItem.itemLevel
-
-            if not itemLevel and monster and PoEMonsterRarity and PoEMonsterRarity.getMonsterLevel then
-                itemLevel = PoEMonsterRarity.getMonsterLevel(monster)
-            end
-
-            if itemLevel then
-                PoeItemMods.setItemLevel(item, itemLevel)
-            end
-        end
-    end
-
     if itemType:isStackable() then
         local tmpItem = Game.createItem(itemId, count)
         if not tmpItem then
             return false
         end
+
+        applyItemLevel(tmpItem, monster, lootItem)
 
         local ret = corpse:addItemEx(tmpItem)
         if ret ~= RETURNVALUE_NOERROR then
@@ -185,7 +189,7 @@ local function addRolledLootItem(corpse, lootItem, monster)
             return false
         end
 
-        applyItemLevelTo(tmpItem)
+        applyItemLevel(tmpItem, monster, lootItem)
 
         local ret = corpse:addItemEx(tmpItem)
         if ret ~= RETURNVALUE_NOERROR then
@@ -277,6 +281,7 @@ ec.onDropLoot = function(self, corpse)
             local monsterLoot = mType:getLoot()
             for i = 1, #monsterLoot do
                 local item = corpse:createLootItem(monsterLoot[i])
+                applyItemLevel(item, self)
                 if not item then
                     print('[Warning] DropLoot:', 'Could not add loot item to corpse.')
                 end
